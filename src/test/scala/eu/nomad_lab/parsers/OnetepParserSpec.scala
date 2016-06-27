@@ -8,9 +8,8 @@ object OnetepParserSpec extends Specification {
       ParserRun.parse(OnetepParser, "parsers/parser-onetep/test/examples/single_point.out", "json-events") must_== ParseResult.ParseSuccess
     }
     "test with json" >> {
-      ParserRun.parse(OnetepParser, "parsers/parser-onetep/examples/single_point.out", "json") must_== ParseResult.ParseSuccess
+      ParserRun.parse(OnetepParser, "parsers/parser-onetep/test/examples/single_point.out", "json") must_== ParseResult.ParseSuccess
     }
   }
 }
-
 

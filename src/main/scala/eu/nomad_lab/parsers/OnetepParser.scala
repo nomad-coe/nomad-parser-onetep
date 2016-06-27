@@ -1,4 +1,4 @@
-pckage eu.nomad_lab.parsers
+package eu.nomad_lab.parsers
 
 import eu.{ nomad_lab => lab }
 import eu.nomad_lab.DefaultPythonInterpreter
@@ -22,7 +22,7 @@ object OnetepParser extends SimpleExternalParserGenerator(
   ),
   mainFileTypes = Seq("text/.*"),
   mainFileRe = """\s\|\s*Linear-Scaling Ab Initio Total Energy Program\s*\|\s*""".r,
-  cmd = Seq(DefaultPythonInterpreter.python2Exe(), "${envDir}/parsers/onetep/parser/parser-onetep/OnetepParser.py",
+  cmd = Seq(DefaultPythonInterpreter.pythonExe(), "${envDir}/parsers/onetep/parser/parser-onetep/OnetepParser.py",
     "--uri", "${mainFileUri}", "${mainFilePath}"),
   resList = Seq(
     "parser-onetep/OnetepParser.py",
