@@ -15,7 +15,7 @@ The simplest way to have this is to check out nomad-lab-base recursively:
 
     git clone --recursive git@gitlab.mpcdf.mpg.de:nomad-lab/nomad-lab-base.git
 
-then this will be in parsers/Onetep.
+then this will be in parsers/onetep.
 
 
 # TEST OUTPUT FILES 
