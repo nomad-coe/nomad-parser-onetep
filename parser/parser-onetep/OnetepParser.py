@@ -625,31 +625,34 @@ class OnetepParserContext(object):
         for file in os.listdir(dirName):
             if file.endswith(extFile):
                 cFile = file
+            else:
+                print("ERROR: please provide .dat file to parse info about cell and positions")
         fName = os.path.normpath(os.path.join(dirName, cFile))
-        if file.endswith(extFile):   
-        #     with open(fName) as fIn:
-        #         MDParser.parseFile(fIn)
-            with open(fName) as fIn:
-                cellParser.parseFile(fIn)  # parsing *.cell file to get the k path segments
-      
-        self.cell = cellSuperContext.cell_store  # recover k path segments coordinartes from *.cell file
-        self.at_nr = cellSuperContext.at_nr
-        self.atom_labels = cellSuperContext.atom_labels_store
-        self.onetep_atom_positions = cellSuperContext.onetep_atom_positions_store
-# Processing the atom positions in fractionary coordinates (as given in the onetep output)
-               
-        backend.addArrayValues('x_onetep_atom_positions', np.asarray(self.onetep_atom_positions))
+        for file in os.listdir(dirName):
+            if file.endswith(extFile):
+                with open(fName) as fIn:
+                    cellParser.parseFile(fIn)  # parsing *.cell file to get the k path segments
+                self.cell = cellSuperContext.cell_store  # recover k path segments coordinartes from *.cell file
+                self.at_nr = cellSuperContext.at_nr
+                self.atom_labels = cellSuperContext.atom_labels_store
+                self.onetep_atom_positions = cellSuperContext.onetep_atom_positions_store
+    # Processing the atom positions in fractionary coordinates (as given in the onetep output)
+                backend.addArrayValues('x_onetep_atom_positions', np.asarray(self.onetep_atom_positions))
 
 
-# Backend add the total number of atoms in the simulation cell
+    # Backend add the total number of atoms in the simulation cell
+                
+
+    # Processing the atom labels
+            #get cached values of onetep_store_atom_labels
+                
+                backend.addArrayValues('atom_labels', np.asarray(self.atom_labels))
+
+                backend.addValue('number_of_atoms', self.at_nr)
             
-
-# Processing the atom labels
-        #get cached values of onetep_store_atom_labels
-            
-        backend.addArrayValues('atom_labels', np.asarray(self.atom_labels))
-
-        backend.addValue('number_of_atoms', self.at_nr)
+                backend.addArrayValues('simulation_cell', np.asarray(self.cell[-3:]))
+       
+       
 
 # Converting the fractional atomic positions (x) to cartesian coordinates (X) ( X = M^-1 x )
         # for i in range(0, self.at_nr):
@@ -666,7 +669,7 @@ class OnetepParserContext(object):
 
         #     self.atom_positions.append(pos_a)
             
-        backend.addArrayValues('simulation_cell', np.asarray(self.cell[-3:]))
+        
         # backend.addValue('x_onetep_cell_volume', self.volume)     
         # backend.addArrayValues('atom_positions', np.asarray(self.atom_positions))
         
@@ -872,37 +875,37 @@ class OnetepParserContext(object):
 ########### BAND STRUCTURE ###########################################################
 ######################################################################################
 
-    def onClose_section_k_band(self, backend, gIndex, section):
-        """Trigger called when section_k_band is closed.
+    # def onClose_section_k_band(self, backend, gIndex, section):
+    #     """Trigger called when section_k_band is closed.
 
-           The k path coordinates are extracted from the *.cell input file.
-        """
+    #        The k path coordinates are extracted from the *.cell input file.
+    #     """
 
-        cellSuperContext = OnetepCellParser.onetepCellParserContext(False)
-        cellParser = AncillaryParser(
-            fileDescription = OnetepCellParser.build_onetepCellFileSimpleMatcher(),
-            parser = self.parser,
-            cachingLevelForMetaName = OnetepCellParser.get_cachingLevelForMetaName(self.metaInfoEnv, CachingLevel.Ignore),
-            superContext = cellSuperContext)
+    #     cellSuperContext = OnetepCellParser.onetepCellParserContext(False)
+    #     cellParser = AncillaryParser(
+    #         fileDescription = OnetepCellParser.build_onetepCellFileSimpleMatcher(),
+    #         parser = self.parser,
+    #         cachingLevelForMetaName = OnetepCellParser.get_cachingLevelForMetaName(self.metaInfoEnv, CachingLevel.Ignore),
+    #         superContext = cellSuperContext)
 
-        extFile = ".cell"       # Find the file with extension .cell
-        dirName = os.path.dirname(os.path.abspath(self.fName))
-        cFile = str()
-        for file in os.listdir(dirName):
-            if file.endswith(extFile):
-                cFile = file
-        fName = os.path.normpath(os.path.join(dirName, cFile))
+    #     extFile = ".cell"       # Find the file with extension .cell
+    #     dirName = os.path.dirname(os.path.abspath(self.fName))
+    #     cFile = str()
+    #     for file in os.listdir(dirName):
+    #         if file.endswith(extFile):
+    #             cFile = file
+    #     fName = os.path.normpath(os.path.join(dirName, cFile))
 
-        with open(fName) as fIn:
-            cellParser.parseFile(fIn)  # parsing *.cell file to get the k path segments
+    #     with open(fName) as fIn:
+    #         cellParser.parseFile(fIn)  # parsing *.cell file to get the k path segments
            
-        self.k_start_end = cellSuperContext.k_sgt_start_end  # recover k path segments coordinartes from *.cell file
-        self.k_path_nr = len(self.k_start_end)
-        # backend.openSection('section_single_configuration_to_calculation_ref')
-        if self.n_spin_channels_bands:
-            backend.openSection('section_method')
-            backend.addValue('number_of_spin_channels',self.n_spin_channels_bands)     
-            backend.closeSection('section_method',gIndex+1)
+    #     self.k_start_end = cellSuperContext.k_sgt_start_end  # recover k path segments coordinartes from *.cell file
+    #     self.k_path_nr = len(self.k_start_end)
+    #     # backend.openSection('section_single_configuration_to_calculation_ref')
+    #     if self.n_spin_channels_bands:
+    #         backend.openSection('section_method')
+    #         backend.addValue('number_of_spin_channels',self.n_spin_channels_bands)     
+    #         backend.closeSection('section_method',gIndex+1)
         
         ########################################################################################
         def get_last_index(el, check):  # function that returns end index for each k path segment
@@ -1159,70 +1162,70 @@ def build_onetepMainFileSimpleMatcher():
 
     ########################################
     # submatcher for section method
-    calculationMethodSubMatcher = SM(name = 'calculationMethods',
-        startReStr = r"\s\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\* Exchange-Correlation Parameters \*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*",
-        forwardMatch = True,
-        sections = ["section_method"],
-        subMatchers = [
-
-           SM(name = "onetepXC",
-              startReStr = r"\susing functional\s*\:",
-              forwardMatch = True,
-              sections = ["x_onetep_section_functionals"],
-              subMatchers = [
-
-                 SM(r"\susing functional\s*\: *(?P<x_onetep_functional_name> [A-Za-z0-9() ]*)"),
-                 #SM(r"\srelativistic treatment\s*\: *(?P<onetep_relativity_treatment_scf> [A-Za-z0-9() -]*)")
-                             ]), # CLOSING onetep_section_functionals
-            
-           SM(name = "onetepXC_definition",
-              startReStr = r"\susing custom XC functional definition\:",
-              #endReStr = r"\srelativistic treatment\s*\:\s*",
-              forwardMatch = True,
-              sections = ["x_onetep_section_functional_definition"],
-              subMatchers = [     
-                 SM(r"\s*(?P<x_onetep_functional_type>[A-Za-z0-9]+)\s*(?P<x_onetep_functional_weight>[0-9.]+)",
-                        repeats = True),
-                 #SM(r"\srelativistic treatment\s*\: *(?P<onetep_relativity_treatment_scf> [A-Za-z0-9() -]*)")              
-                              ]), # CLOSING onetep_section_functional_definition
-
-           SM(name = "onetep_relativ",
-              startReStr = r"\srelativistic treatment\s*\:\s*",
-              forwardMatch = True,
-              sections = ["x_onetep_section_relativity_treatment"],
-              subMatchers = [
-                 SM(r"\srelativistic treatment\s*\: *(?P<x_onetep_relativity_treatment_scf> [A-Za-z0-9() -]+)")
-                             ]), # CLOSING onetep_section_relativistic_treatment           
-
-            SM(name = "van der Waals",
-               startReStr = r"\sDFT\+D: Semi-empirical dispersion correction\s*\:\s*",
-               #forwardMatch = True,
-               #sections = ["onetep_section_relativity_treatment"],
-               subMatchers = [
-                 SM(r"\sSEDC with\s*\: *(?P<van_der_Waals_method> [A-Za-z0-9() -]+)"),
-                             ]), # CLOSING van der waals
-            
-            
-              
-
-              ]) # CLOSING SM calculationMethods
-
+    
 
 
     ########################################
     # submatcher for section_basis_set_cell_dependent
 
     basisSetCellAssociatedSubMatcher = SM(name = 'planeWaveBasisSet',
-        startReStr = r"\s\*\*\** Basis Set Parameters \*\*\**\s*",
+        startReStr = r"cutoff_energy\s*\:\s[0-9.]+",
         forwardMatch = True,
         sections = ["section_basis_set_cell_dependent"],
         subMatchers = [
 
-            SM(r"\splane wave basis set cut\-off\s*\:\s*(?P<x_onetep_basis_set_planewave_cutoff>[0-9.]+)"),
-            SM(r"\ssize of standard grid\s*\:\s*(?P<x_onetep_size_std_grid>[+0-9.eEd]+)"),
-            SM(r"\ssize of   fine   gmax\s*\:\s*(?P<x_onetep_size_fine_grid>[+0-9.eEd]+)"),
+            SM(r"cutoff_energy\s*\:\s(?P<x_onetep_basis_set_planewave_cutoff>[0-9.]+)"),
+            SM(r"kernel_cutoff\s*\:\s(?P<x_onetep_kernel_cutoff>[0-9.]+)"),
+            # SM(r"\ssize of   fine   gmax\s*\:\s*(?P<x_onetep_size_fine_grid>[+0-9.eEd]+)"),
                       ]) # CLOSING SM planeWaveBasisSet
 
+    calculationMethodSubMatcher = SM(name = 'calculationMethods',
+        startReStr = r"kernel_cutoff\s*\:\s[0-9.]+",
+        forwardMatch = True,
+        sections = ["section_method"],
+        subMatchers = [
+
+            SM(name = "onetepXC",
+               startReStr = r"xc\_functional\s*\:\s[A-Za-z0-9() ]*",
+               forwardMatch = True,
+               sections = ["x_onetep_section_functionals"],
+               subMatchers = [
+
+                 SM(r"xc\_functional\s*\:\s(?P<x_onetep_functional_name> [A-Za-z0-9() ]*)"),
+                 
+                             ]), # CLOSING onetep_section_functionals
+            ])
+    #        # SM(name = "onetepXC_definition",
+    #        #    startReStr = r"\susing custom XC functional definition\:",
+    #        #    #endReStr = r"\srelativistic treatment\s*\:\s*",
+    #        #    forwardMatch = True,
+    #        #    sections = ["x_onetep_section_functional_definition"],
+    #        #    subMatchers = [     
+    #        #       SM(r"\s*(?P<x_onetep_functional_type>[A-Za-z0-9]+)\s*(?P<x_onetep_functional_weight>[0-9.]+)",
+    #        #              repeats = True),
+    #        #       #SM(r"\srelativistic treatment\s*\: *(?P<onetep_relativity_treatment_scf> [A-Za-z0-9() -]*)")              
+    #        #                    ]), # CLOSING onetep_section_functional_definition
+
+    #        # SM(name = "onetep_relativ",
+    #        #    startReStr = r"\srelativistic treatment\s*\:\s*",
+    #        #    forwardMatch = True,
+    #        #    sections = ["x_onetep_section_relativity_treatment"],
+    #        #    subMatchers = [
+    #        #       SM(r"\srelativistic treatment\s*\: *(?P<x_onetep_relativity_treatment_scf> [A-Za-z0-9() -]+)")
+    #        #                   ]), # CLOSING onetep_section_relativistic_treatment           
+
+    #        #  SM(name = "van der Waals",
+    #        #     startReStr = r"\sDFT\+D: Semi-empirical dispersion correction\s*\:\s*",
+    #        #     #forwardMatch = True,
+    #        #     #sections = ["onetep_section_relativity_treatment"],
+    #        #     subMatchers = [
+    #        #       SM(r"\sSEDC with\s*\: *(?P<van_der_Waals_method> [A-Za-z0-9() -]+)"),
+    #        #                   ]), # CLOSING van der waals
+            
+            
+              
+
+    #           ]), # CLOSING SM calculationMethods
 
     phononCalculationSubMatcher = SM(name = 'phonon_calculation',
         sections = ["x_onetep_section_phonons"],
@@ -1254,7 +1257,7 @@ def build_onetepMainFileSimpleMatcher():
         startReStr = r"\-*\sAtom counting information\s\-*\s*",
         subMatchers = [
             
-            SM(r"Total\:\s*(?P<x_onetep_number_of_atoms>[0-9.]+)\s*(?P<x_onetep_number_of_ngwf>[0-9.]+)\s*(?P<x_onetep_number_of_projectors>[0-9.]+)"),
+            SM(r"Totals\:\s*(?P<x_onetep_number_of_atoms>[0-9]+)\s*(?P<x_onetep_number_of_ngwf>[0-9]+)\s*(?P<x_onetep_number_of_projectors>[0-9]+)"),
             # SM(r"\s*net charge of system\s*\:\s*(?P<x_onetep_net_charge>[+0-9.eEd]+)"),
             # SM(r"\s*number of bands\s*\:\s*(?P<x_onetep_number_of_bands>[0-9.]+)"),
             ])
@@ -2094,12 +2097,13 @@ def build_onetepMainFileSimpleMatcher():
                 # scfEigenvaluesSubMatcher, # export section_eigenvalues_group to the correct nesting
 
 
-                # calculationMethodSubMatcher, # section_method
+                 # section_method
 
                
-                # basisSetCellAssociatedSubMatcher, # section_basis_set_cell_dependent
-                
+                basisSetCellAssociatedSubMatcher, # section_basis_set_cell_dependent
+                calculationMethodSubMatcher,
                 ElectronicParameterSubMatcher,
+                
                 
                 # ElectronicMinimisParameterSubMatcher,
 

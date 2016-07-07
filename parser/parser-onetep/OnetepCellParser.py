@@ -111,15 +111,16 @@ def build_OnetepCellFileSimpleMatcher():
         weak = True,
         subMatchers = [
             SM(name = "systemDescription",
-            startReStr = r"\stask\s*\:\sSINGLEPOINT",
+            startReStr = "",
+            # startReStr = r"\stask\s*\:\sSINGLEPOINT",
             forwardMatch = True,
             sections = ["section_system"],
             subMatchers = [
 
            # cell information
                 SM(name = 'cellInformation',
-                    startReStr = r"\s%block\slattice\_cart\s*",
-                    forwardMatch = True,
+                    startReStr = r"\s\%block\slattice\_cart\s*",
+                    # forwardMatch = True,
                     sections = ["x_onetep_section_cell"],
                         subMatchers = [
                             SM(r"\s*(?P<x_onetep_cell_vector>[-+0-9.eEdD]+\s+[-+0-9.eEdD]+\s+[-+0-9.eEd]+)",
@@ -223,8 +224,8 @@ def get_cachingLevelForMetaName(metaInfoEnv, CachingLvl):
     # manually adjust caching of metadata
     cachingLevelForMetaName = {
                                # 'section_k_band': CachingLvl,
-                                'section_run': CachingLvl,
-                                'section_single_configuration_calculation': CachingLvl,
+                                # 'section_run': CachingLvl,
+                                # 'section_single_configuration_calculation': CachingLvl,
                               }
     # Set all band metadata to Cache as they need post-processsing.
     for name in metaInfoEnv.infoKinds:
