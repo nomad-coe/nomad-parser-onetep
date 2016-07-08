@@ -580,47 +580,47 @@ class OnetepParserContext(object):
 ################ Triggers on closure section_system ######################
 ######################################################################################
 
-    def onClose_section_system(self, backend, gIndex, section):
-        """trigger called when _section_system is closed"""
-        cellSuperContext = OnetepCellParser.OnetepCellParserContext(False)
-        cellParser = AncillaryParser(
-            fileDescription = OnetepCellParser.build_OnetepCellFileSimpleMatcher(),
-            parser = self.parser,
-            cachingLevelForMetaName = OnetepCellParser.get_cachingLevelForMetaName(self.metaInfoEnv, CachingLevel.Ignore),
-            superContext = cellSuperContext)
+    # def onClose_section_system(self, backend, gIndex, section):
+    #     """trigger called when _section_system is closed"""
+    #     cellSuperContext = OnetepCellParser.OnetepCellParserContext(False)
+    #     cellParser = AncillaryParser(
+    #         fileDescription = OnetepCellParser.build_OnetepCellFileSimpleMatcher(),
+    #         parser = self.parser,
+    #         cachingLevelForMetaName = OnetepCellParser.get_cachingLevelForMetaName(self.metaInfoEnv, CachingLevel.Ignore),
+    #         superContext = cellSuperContext)
 
-        extFile = ".dat"       # Find the file with extension .cell
-        dirName = os.path.dirname(os.path.abspath(self.fName))
-        cFile = str()
-        for file in os.listdir(dirName):
-            if file.endswith(extFile):
-                cFile = file
-            # else:
-            #     print("ERROR: please provide .dat file to parse info about cell and positions")
-        fName = os.path.normpath(os.path.join(dirName, cFile))
-        for file in os.listdir(dirName):
-            if file.endswith(extFile):
-                with open(fName) as fIn:
-                    cellParser.parseFile(fIn)  # parsing *.cell file to get the k path segments
-                self.cell = cellSuperContext.cell_store  # recover k path segments coordinartes from *.cell file
-                self.at_nr = cellSuperContext.at_nr
-                self.atom_labels = cellSuperContext.atom_labels_store
-                self.onetep_atom_positions = cellSuperContext.onetep_atom_positions_store
-    # Processing the atom positions in fractionary coordinates (as given in the onetep output)
-                backend.addArrayValues('x_onetep_atom_positions', np.asarray(self.onetep_atom_positions))
+    #     extFile = ".dat"       # Find the file with extension .cell
+    #     dirName = os.path.dirname(os.path.abspath(self.fName))
+    #     cFile = str()
+    #     for file in os.listdir(dirName):
+    #         if file.endswith(extFile):
+    #             cFile = file
+    #         # else:
+    #         #     print("ERROR: please provide .dat file to parse info about cell and positions")
+    #     fName = os.path.normpath(os.path.join(dirName, cFile))
+    #     for file in os.listdir(dirName):
+    #         if file.endswith(extFile):
+    #             with open(fName) as fIn:
+    #                 cellParser.parseFile(fIn)  # parsing *.cell file to get the k path segments
+    #             self.cell = cellSuperContext.cell_store  # recover k path segments coordinartes from *.cell file
+    #             self.at_nr = cellSuperContext.at_nr
+    #             self.atom_labels = cellSuperContext.atom_labels_store
+    #             self.onetep_atom_positions = cellSuperContext.onetep_atom_positions_store
+    # # Processing the atom positions in fractionary coordinates (as given in the onetep output)
+    #             backend.addArrayValues('x_onetep_atom_positions', np.asarray(self.onetep_atom_positions))
 
 
-    # Backend add the total number of atoms in the simulation cell
+    # # Backend add the total number of atoms in the simulation cell
                 
 
-    # Processing the atom labels
-            #get cached values of onetep_store_atom_labels
+    # # Processing the atom labels
+    #         #get cached values of onetep_store_atom_labels
                 
-                backend.addArrayValues('atom_labels', np.asarray(self.atom_labels))
+    #             backend.addArrayValues('atom_labels', np.asarray(self.atom_labels))
 
-                backend.addValue('number_of_atoms', self.at_nr)
+    #             backend.addValue('number_of_atoms', self.at_nr)
             
-                backend.addArrayValues('simulation_cell', np.asarray(self.cell[-3:]))
+    #             backend.addArrayValues('simulation_cell', np.asarray(self.cell[-3:]))
        
        
 
@@ -944,6 +944,43 @@ class OnetepParserContext(object):
                 self.atom_forces_band = self.atom_forces_band[-self.at_nr:] 
             backend.addArrayValues('x_onetep_atom_forces', np.asarray(self.atom_forces_band))        
 
+        cellSuperContext = OnetepCellParser.OnetepCellParserContext(False)
+        cellParser = AncillaryParser(
+            fileDescription = OnetepCellParser.build_OnetepCellFileSimpleMatcher(),
+            parser = self.parser,
+            cachingLevelForMetaName = OnetepCellParser.get_cachingLevelForMetaName(self.metaInfoEnv, CachingLevel.Ignore),
+            superContext = cellSuperContext)
+
+        extFile = ".dat"       # Find the file with extension .cell
+        dirName = os.path.dirname(os.path.abspath(self.fName))
+        cFile = str()
+        for file in os.listdir(dirName):
+            if file.endswith(extFile):
+                cFile = file
+            # else:
+            #     print("ERROR: please provide .dat file to parse info about cell and positions")
+        fName = os.path.normpath(os.path.join(dirName, cFile))
+        for file in os.listdir(dirName):
+            if file.endswith(extFile):
+                with open(fName) as fIn:
+                    cellParser.parseFile(fIn)  # parsing *.cell file to get the k path segments
+                self.cell = cellSuperContext.cell_store  # recover k path segments coordinartes from *.cell file
+                self.at_nr = cellSuperContext.at_nr
+                self.atom_labels = cellSuperContext.atom_labels_store
+                self.onetep_atom_positions = cellSuperContext.onetep_atom_positions_store
+    # Processing the atom positions in fractionary coordinates (as given in the onetep output)
+               
+                backend.openSection('section_system')
+               
+                backend.addArrayValues('x_onetep_atom_positions', np.asarray(self.onetep_atom_positions))
+
+                backend.addArrayValues('atom_labels', np.asarray(self.atom_labels))
+
+                backend.addValue('number_of_atoms', self.at_nr)
+            
+                backend.addArrayValues('simulation_cell', np.asarray(self.cell[-3:]))    
+               
+                backend.closeSection('section_system',gIndex + 2)
         # time_list = self.time_0
         # if section['x_onetep_geom_converged'] is not None:
         #     if section['x_onetep_geom_converged'][-1] == 'successfully':
