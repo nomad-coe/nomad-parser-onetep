@@ -283,7 +283,7 @@ class OnetepParserContext(object):
          #       backend.addValue('XC_functional_weight', self.functional_weight[i])
                 backend.closeSection('section_XC_functionals',gIndex+i)
             backend.addValue('XC_functional', "_".join(sorted(self.functionals)))
-            backend.addValue('relativity_method', self.relativistic)
+            # backend.addValue('relativity_method', self.relativistic)
             if self.dispersion is not None:
                 backend.addValue('XC_method_current', ("_".join(sorted(self.functionals)))+'_'+self.dispersion+'_'+self.relativistic)
             else:
