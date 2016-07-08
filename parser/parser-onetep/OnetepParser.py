@@ -158,17 +158,18 @@ class OnetepParserContext(object):
         #get cached values of onetep_store_atom_mass and type
         mass = section['x_onetep_store_atom_mass']
         name = section['x_onetep_store_atom_name']
+        n_ngwf = section['x_onetep_n_ngwf_atom_store']
+        radius = section['x_onetep_ngwf_radius_store']
         for i in range(len(mass)):
             #converting mass in Kg from AMU
-            mass[i] = float(mass[i]) * 1.66053904e-27
+            # mass[i] = float(mass[i]) * 1.66053904e-27
 
             backend.openSection('section_atom_type')
             backend.addValue('atom_type_mass', float(mass[i]))
-
             backend.addValue('atom_type_name', name[i])
             backend.closeSection('section_atom_type', gIndex+i)
-    
-
+            backend.addValue('x_onetep_n_ngwf_atom', n_ngwf[i])
+            backend.addValue('x_onetep_ngwf_radius', radius[i])
 # Translating the XC functional name to the NOMAD standard
     def onClose_x_onetep_section_functionals(self, backend, gIndex, section):
         """When all the functional definitions have been gathered, matches them
@@ -180,25 +181,27 @@ class OnetepParserContext(object):
         
         #relativistic_names = section["onetep_relativity_treatment_scf"]
 
-        # Define a mapping for the functionals
+        
         functional_map = {
-            " Perdew Burke Ernzerhof": "GGA_C_PBE_GGA_X_PBE",
-            " Local Density Approximation": "LDA_C_PZ_LDA_X_PZ",
-            " Perdew Wang (1991)": "GGA_C_PW91_GGA_X_PW91",
-            " revised Perdew Burke Ernzerhof": "GGA_X_RPBE",
-            " PBE for solids (2008)": "GGA_X_PBE_SOL",          
-            " hybrid B3LYP"       :"HYB_GGA_XC_B3LYP5",
-            " Hartree-Fock"       :"HF_X", 
-            " Hartree-Fock + Local Density Approximation":"HF_X_LDA_C_PW",
-            " hybrid HSE03"              :"HYB_GGA_XC_HSE03",
-            " hybrid HSE06"              :"HYB_GGA_XC_HSE06",
-            " hybrid PBE0"               :"GGA_C_PBE_GGA_X_PBE", 
-            " PBE with Wu-Cohen exchange" :"GGA_C_PBE_GGA_X_WC",    
-            " LDA-X" : "LDA_X_PZ",
-            " LDA-C" : "LDA_C_PZ",
-            #" 'EXX','EXX-LDA'" : ""
-            #" 'SHF','SX'"      :
-             " Optimised Effective Potential" : " Optimised Effective Potential"
+            "PBE": "GGA_C_PBE_GGA_X_PBE",
+            "LDA": "LDA_C_PZ_LDA_X_PZ",
+            "PW91": "GGA_C_PW91_GGA_X_PW91",
+            "PW92": "GGA_C_PW92_GGA_X_PW92",
+            "GGA": "GGA_X_PBE",
+            "CAPZ": "LDA_C_PZ",
+            "VWN": "LDA_C_VWN",
+            "PBESOL": "GGA_X_PBE_SOL",          
+            "RPBE": "GGA_X_RPBE",
+            "REVPBE":"GGA_X_PBE_R",
+            "BLYP":"GGA_X_B88_GGA_C_LYP",
+            "XLYP":"GGA_XC_XLYP",
+            "OPTB88":"GGA_X_OPTB88_VDW_LDA_C_PZ",
+            "OPTPBE":"GGA_X_OPTPBE_VDW_LDA_C_PZ",
+            "VDWDF":"GGA_X_PBE_R_VDW_LDA_C_PZ",
+            "VDWDF2":"GGA_X_RPW86_LDA_C_PZ",
+            "VV10":"HYB_GGA_XC_LC_VV10",
+            "AVV10S":"GGA_X_AM05_GGA_C_AM05_rVV10-sol",
+            
         }
        
        
@@ -209,43 +212,10 @@ class OnetepParserContext(object):
             match = functional_map.get(name)
             if match:
                 self.functionals.append(match)
-        #self.functionals = "_".join(sorted(self.functionals))
+            
+        # self.functionals = "_".join(sorted(self.functionals))
         
 
-    def onClose_x_onetep_section_functional_definition(self, backend, gIndex, section):
-
-        self.functional_types = section["x_onetep_functional_type"]
-        self.functional_weight = section["x_onetep_functional_weight"]
-        
-
-        # Define a mapping for the functionals
-        functional_map = {
-            "PBE": "GGA_C_PBE_GGA_X_PBE",
-            "PW91": "GGA_C_PW91_GGA_X_PW91",
-            "RPBE": "GGA_X_RPBE",
-            "PBEsol": "GGA_X_PBE_SOL",          
-            "HF"       :"HF_X", 
-            "HF-LDA":"HF_X_LDA_C_PW",
-            "HSE03"              :"HYB_GGA_XC_HSE03",
-            "HSE06"              :"HYB_GGA_XC_HSE06",
-            "PBE0"               :"GGA_C_PBE_GGA_X_PBE", 
-            "WC" :"GGA_C_PBE_GGA_X_WC",    
-            "LDA-X" : "LDA_X_PZ",
-            "LDA-C" : "LDA_C_PZ",
-            "LDA": "LDA_C_PZ_LDA_X_PZ",
-            "b3lyp"       :"HYB_GGA_XC_B3LYP5",
-            #" 'EXX','EXX-LDA'" : ""
-            #" 'SHF','SX'"      :
-            " Optimised Effective Potential" : " Optimised Effective Potential"
-        }
-        
-        self.functionals = []
-       
-        for name in self.functional_types:
-            match = functional_map.get(name)
-            if match:
-                self.functionals.append(match)
-        #self.functionals = "_".join(sorted(self.functionals))
         
     def onClose_x_onetep_section_relativity_treatment(self, backend, gIndex, section):
         relativistic_names = section["x_onetep_relativity_treatment_scf"]
@@ -299,7 +269,7 @@ class OnetepParserContext(object):
         # Push the functional string into the backend
         # Push the relativistic treatment string into the backend
             backend.addValue('XC_functional', "_".join(sorted(self.functionals)))
-            backend.addValue('relativity_method', self.relativistic)
+            # backend.addValue('relativity_method', self.relativistic)
         #if self.functional_weight = 0
             if self.dispersion is not None:
                 backend.addValue('XC_method_current', ("_".join(sorted(self.func_total)))+'_'+self.dispersion+'_'+self.relativistic)
@@ -317,7 +287,7 @@ class OnetepParserContext(object):
             if self.dispersion is not None:
                 backend.addValue('XC_method_current', ("_".join(sorted(self.functionals)))+'_'+self.dispersion+'_'+self.relativistic)
             else:
-                backend.addValue('XC_method_current', ("_".join(sorted(self.functionals)))+'_'+self.relativistic)
+                backend.addValue('XC_method_current', ("_".join(sorted(self.functionals))))
         
         if self.n_spin_channels:
             backend.addValue('number_of_spin_channels', self.n_spin_channels[0])
@@ -332,8 +302,8 @@ class OnetepParserContext(object):
         eVtoRy = 0.073498618
         ecut_str_name = int(round(eVtoRy*self.ecut))
 
-        basis_set_kind = 'plane_waves'
-        basis_set_name = 'PW_'+str(ecut_str_name)
+        basis_set_kind = 'psinc_functions'
+        basis_set_name = 'psinc_functions'
         backend.addValue('basis_set_planewave_cutoff', self.ecut)
         backend.addValue('basis_set_cell_dependent_kind', basis_set_kind)
         backend.addValue('basis_set_cell_dependent_name', basis_set_name)
@@ -625,8 +595,8 @@ class OnetepParserContext(object):
         for file in os.listdir(dirName):
             if file.endswith(extFile):
                 cFile = file
-            else:
-                print("ERROR: please provide .dat file to parse info about cell and positions")
+            # else:
+            #     print("ERROR: please provide .dat file to parse info about cell and positions")
         fName = os.path.normpath(os.path.join(dirName, cFile))
         for file in os.listdir(dirName):
             if file.endswith(extFile):
@@ -797,16 +767,16 @@ class OnetepParserContext(object):
         if orb_contr:
             self.total_contribution.extend(orb_contr)
    
-        backend.addArrayValues('x_onetep_total_orbital',np.asarray(self.total_contribution))
+            backend.addArrayValues('x_onetep_total_orbital',np.asarray(self.total_contribution))
         
         if tot_charge:
             self.total_charge.extend(tot_charge)
-        backend.addArrayValues('x_onetep_mulliken_charge', np.asarray(self.total_charge))
+            backend.addArrayValues('x_onetep_mulliken_charge', np.asarray(self.total_charge))
 
         if spin:
             self.total_spin_mulliken.extend(spin)
    
-        backend.addArrayValues('x_onetep_spin',np.asarray(self.total_spin_mulliken))
+            backend.addArrayValues('x_onetep_spin',np.asarray(self.total_spin_mulliken))
 ######################################################################################
 ###################### Storing k band points and band energies #######################
 ############################# FIRST SPIN CHANNEL #####################################
@@ -1169,29 +1139,36 @@ def build_onetepMainFileSimpleMatcher():
     # submatcher for section_basis_set_cell_dependent
 
     basisSetCellAssociatedSubMatcher = SM(name = 'planeWaveBasisSet',
-        startReStr = r"cutoff_energy\s*\:\s[0-9.]+",
+        startReStr = r"cutoff_energy+" or r"kernel_cutoff+",
+        subFlags = SM.SubFlags.Unordered,
         forwardMatch = True,
         sections = ["section_basis_set_cell_dependent"],
         subMatchers = [
-
-            SM(r"cutoff_energy\s*\:\s(?P<x_onetep_basis_set_planewave_cutoff>[0-9.]+)"),
-            SM(r"kernel_cutoff\s*\:\s(?P<x_onetep_kernel_cutoff>[0-9.]+)"),
-            # SM(r"\ssize of   fine   gmax\s*\:\s*(?P<x_onetep_size_fine_grid>[+0-9.eEd]+)"),
+            SM(r"kernel_cutoff\s+(?P<x_onetep_kernel_cutoff>[0-9.]+)"),
+            SM(r"cutoff_energy\s+(?P<x_onetep_basis_set_planewave_cutoff>[0-9.]+)"),
+            SM(r"kernel_cutoff\s*\:\s*(?P<x_onetep_kernel_cutoff>[0-9.]+)"),
+            SM(r"cutoff_energy\s*\:\s*(?P<x_onetep_basis_set_planewave_cutoff>[0-9.]+)"),
+            SM(r"kernel_cutoff\:\s*(?P<x_onetep_kernel_cutoff>[0-9.]+)"),
+            SM(r"cutoff_energy\:\s*(?P<x_onetep_basis_set_planewave_cutoff>[0-9.]+)"),
+           
                       ]) # CLOSING SM planeWaveBasisSet
 
     calculationMethodSubMatcher = SM(name = 'calculationMethods',
-        startReStr = r"kernel_cutoff\s*\:\s[0-9.]+",
+        startReStr = r"xc\_functional+",
         forwardMatch = True,
         sections = ["section_method"],
         subMatchers = [
 
             SM(name = "onetepXC",
-               startReStr = r"xc\_functional\s*\:\s[A-Za-z0-9() ]*",
+               startReStr = r"xc\_functional+",
+               subFlags = SM.SubFlags.Unordered,
                forwardMatch = True,
                sections = ["x_onetep_section_functionals"],
                subMatchers = [
-
-                 SM(r"xc\_functional\s*\:\s(?P<x_onetep_functional_name> [A-Za-z0-9() ]*)"),
+                 SM(r"xc\_functional\s*\:\s(?P<x_onetep_functional_name>[A-Za-z0-9()]+)"),
+                 SM(r"xc\_functional\:\s*(?P<x_onetep_functional_name>[A-Za-z0-9()]+)"),
+                 SM(r"xc\_functional\s*(?P<x_onetep_functional_name>[A-Za-z0-9()]+)") ,
+                 SM(r"xc\_functional\s*\:\s*(?P<x_onetep_functional_name>[A-Za-z0-9()]+)"),
                  
                              ]), # CLOSING onetep_section_functionals
             ])
@@ -1356,59 +1333,7 @@ def build_onetepMainFileSimpleMatcher():
             SM(r"\s*Time-Dependent DFT approximation\s*\:\s*(?P<x_onetep_tddft_approximation>[A-Za-z]+)"),
             SM(r"\s*Time-Dependent DFT position operator\s*\:\s*(?P<x_onetep_tddft_position_op>[A-Za-z]+)"),
             ])
-    ########################################
-    # submatcher for section system description
-    # systemDescriptionSubMatcher = SM(name = "systemDescription",
-    #     startReStr = r"\s*Unit Cell\s*",
-    #     forwardMatch = True,
-    #     sections = ["section_system"],
-    #     subMatchers = [
 
-    #        # cell information
-    #        SM(name = 'cellInformation',
-    #           startReStr = r"\s*Unit Cell\s*",
-    #           forwardMatch = True,
-    #           sections = ["x_onetep_section_cell"],
-    #           subMatchers = [
-    #               SM(r"\s*(?P<x_onetep_cell_vector>[-+0-9.eEdD]+\s+[-+0-9.eEdD]+\s+[-+0-9.eEd]+) \s*[-+0-9.eEdD]*\s*[-+0-9.eEdD]*\s*[-+0-9.eEdD]*",
-    #              #SM(r"\s*(?P<onetep_cell_vector>[\d\.]+\s+[\d\.]+\s+[\d\.]+) \s*[-+0-9.eEdD]*\s*[-+0-9.eEdD]*\s*[-+0-9.eEdD]*",
-    #                 endReStr = "\n",
-    #                 repeats = True),
-
-    #                          ]), # CLOSING onetep_section_cell
-
-
-    #        # atomic positions and cell dimesions
-    #         SM(startReStr = r"\s*Lattice parameters",
-    #           forwardMatch = True,
-    #           sections = ["x_onetep_section_atom_positions"],
-    #           subMatchers = [
-
-    #              SM(r"\s*a \=\s*(?P<x_onetep_cell_length_a>[\d\.]+)\s*alpha \=\s*(?P<x_onetep_cell_angle_alpha>[\d\.]+)"),
-    #              SM(r"\s*b \=\s*(?P<x_onetep_cell_length_b>[\d\.]+)\s*beta  \=\s*(?P<x_onetep_cell_angle_beta>[\d\.]+)"),
-    #              SM(r"\s*c \=\s*(?P<x_onetep_cell_length_c>[\d\.]+)\s*gamma \=\s*(?P<x_onetep_cell_angle_gamma>[\d\.]+)"),
-    #              SM(r"\s*x\s*(?P<x_onetep_store_atom_labels>[A-Za-z0-9]+\s*[0-9.]+)\s*(?P<x_onetep_store_atom_positions>[-\d\.]+\s+[-\d\.]+\s+[-\d\.]+)",
-    #                 endReStr = "\n",
-    #                 repeats = True)
-                
-    #                          ]), # CLOSING onetep_section_atom_position
-
-    #         # atomic positions and cell dimesions
-    #        SM(startReStr = r"\s*Units of ionic velocities is ANG\/PS\s*",
-    #           forwardMatch = True,
-    #           #sections = ["onetep_section_atom_position"],
-    #           subMatchers = [
-    #              SM(r"\s*x\s*[A-Za-z0-9]+\s+[\d\.]+\s*[0-9]\s*(?P<x_onetep_store_atom_ionic_velocities>[-+0-9.eEdD]+\s*[-+0-9.eEdD]+\s*[-+0-9.eEdD]+)",
-    #                 endReStr = "\n",
-    #                 repeats = True)
-
-    #                          ]), # CLOSING onetep_section_atom_positions
-
-    #                   ]) # CLOSING SM systemDescription
-
-   
-
-    # submatcher for band structure
     bandStructureSubMatcher = SM (name = 'BandStructure',
         startReStr = r"\s*\+\s*B A N D   S T R U C T U R E   C A L C U L A T I O N\s*",
         #startReStr = r"\stype\sof\scalculation\s*\:\sband\sstructure\s*",
@@ -2057,8 +1982,8 @@ def build_onetepMainFileSimpleMatcher():
             #endReStr = r"\s*Bond\s*Population\s*Length\s\(A\)\s*",
             repeats = True,
             subMatchers = [ 
-                SM(r"\s*[a-zA-Z]+\s*[0-9.]+\s*(?P<x_onetep_total_orbital_store>[-\d\.]+)\s*(?P<x_onetep_mulliken_charge_store>[-\d\.]+)\s*", repeats = True),
-                SM(r"\s*[a-zA-Z]+\s*[0-9.]+\s*(?P<x_onetep_total_orbital_store>[-\d\.]+)\s*(?P<x_onetep_mulliken_charge_store>[-\d\.]+)\s*(?P<x_onetep_spin_store>[-\d\.]+)\s*",       
+                SM(r"\s*[a-zA-Z]+\s*[0-9.]+\s*(?P<x_onetep_total_orbital_store>[0-9.]+)\s*(?P<x_onetep_mulliken_charge_store>[0-9.]+)\s*", repeats = True),
+                SM(r"\s*[a-zA-Z]+\s*[0-9.]+\s*(?P<x_onetep_total_orbital_store>[0-9.]+)\s*(?P<x_onetep_mulliken_charge_store>[0-9.]+)\s*(?P<x_onetep_spin_store>[0-9.]+)\s*",       
                     
                     repeats = True),
                  ]) 
@@ -2068,10 +1993,12 @@ def build_onetepMainFileSimpleMatcher():
     return SM (name = 'Root',
         startReStr = "",
         forwardMatch = True,
+        # subFlags = SM.SubFlags.Unordered,
         weak = True,
         subMatchers = [
         SM (name = 'NewRun',
             startReStr = r"\s\|\s*Linear-Scaling Ab Initio Total Energy Program\s*\|\s*",
+            subFlags = SM.SubFlags.Unordered,
             required = True,
             forwardMatch = True,
             sections = ['section_run'],
@@ -2099,9 +2026,20 @@ def build_onetepMainFileSimpleMatcher():
 
                  # section_method
 
-               
-                basisSetCellAssociatedSubMatcher, # section_basis_set_cell_dependent
                 calculationMethodSubMatcher,
+                basisSetCellAssociatedSubMatcher,
+                SM(name = 'Atom_topology',
+                  startReStr = r"\%block species\s*",              
+                  # endReStr = r"\%endblock species\s*",  
+                  #forwardMatch = True,
+                  sections = ['section_topology'],
+                  subMatchers = [
+                 
+                      SM(r"[0-9a-zA-Z]+\s*(?P<x_onetep_store_atom_name>[a-zA-Z]+)\s*(?P<x_onetep_store_atom_mass>[0-9.]+)\s*(?P<x_onetep_n_ngwf_atom_store>[0-9.]+)\s*(?P<x_onetep_ngwf_radius_store>[\d\.]+)\s*",
+                        #endReStr = "\n",   
+                        repeats = True),
+                     ]), # CLOSING section_atom_topology
+
                 ElectronicParameterSubMatcher,
                 
                 
@@ -2127,17 +2065,7 @@ def build_onetepMainFileSimpleMatcher():
 
                 # systemDescriptionSubMatcher, # section_system subMatcher
         
-          #       SM(name = 'Atom_topology',
-          #         startReStr = r"\s*Mass of species in AMU\s*",              
-          #         endReStr = "\n",
-          #         #forwardMatch = True,
-          #         sections = ['section_topology'],
-          #         subMatchers = [
-                 
-          #             SM(r"\s*(?P<x_onetep_store_atom_name>[a-zA-Z]+)\s*(?P<x_onetep_store_atom_mass>[\d\.]+)\s*",
-          #               #endReStr = "\n",   
-          #               repeats = True),
-          #            ]), # CLOSING section_atom_topology
+                
                
 
           #       SM(r"\s*Point group of crystal\s\=\s*[0-9.]+\:\s(?P<x_onetep_crystal_point_group>[a-zA-Z0-9.]+)"),
@@ -2282,6 +2210,8 @@ def get_cachingLevelForMetaName(metaInfoEnv):
                                 'x_onetep_total_orbital_store':CachingLevel.Cache,
                                 'x_onetep_mulliken_charge_store':CachingLevel.Cache,
                                 'x_onetep_spin_store':CachingLevel.Cache,
+                                'x_onetep_ngwf_radius_store':CachingLevel.Cache,
+                                'x_onetep_n_ngwf_atom_store':CachingLevel.Cache,
                                 'x_onetep_SCF_frame_energy':CachingLevel.Cache}
 
     # Set caching for temparary storage variables

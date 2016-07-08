@@ -108,10 +108,12 @@ def build_OnetepCellFileSimpleMatcher():
         startReStr = "",
         sections = ['section_run'],
         forwardMatch = True,
+        subFlags = SM.SubFlags.Unordered,
         weak = True,
         subMatchers = [
             SM(name = "systemDescription",
             startReStr = "",
+            # subFlags = SM.SubFlags.Unordered,
             # startReStr = r"\stask\s*\:\sSINGLEPOINT",
             forwardMatch = True,
             sections = ["section_system"],
@@ -119,7 +121,7 @@ def build_OnetepCellFileSimpleMatcher():
 
            # cell information
                 SM(name = 'cellInformation',
-                    startReStr = r"\s\%block\slattice\_cart\s*",
+                    startReStr = r"\%block\slattice\_cart\s*",
                     # forwardMatch = True,
                     sections = ["x_onetep_section_cell"],
                         subMatchers = [
@@ -129,37 +131,78 @@ def build_OnetepCellFileSimpleMatcher():
                             repeats = True),
 
                         ]), # CLOSING onetep_section_cell
+                SM(name = 'cellInformation',
+                    startReStr = r"\s*\%block\slattice\_cart\s*",
+                    # forwardMatch = True,
+                    sections = ["x_onetep_section_cell"],
+                        subMatchers = [
+                            SM(r"\s*(?P<x_onetep_cell_vector>[-+0-9.eEdD]+\s+[-+0-9.eEdD]+\s+[-+0-9.eEd]+)",
+                 #SM(r"\s*(?P<onetep_cell_vector>[\d\.]+\s+[\d\.]+\s+[\d\.]+) \s*[-+0-9.eEdD]*\s*[-+0-9.eEdD]*\s*[-+0-9.eEdD]*",
+                    # endReStr = "\%endblock\s*lattice\_cart\s*",
+                            repeats = True),
 
-                # SM(name = 'cellInformation',
-                # startReStr = r"\%block\s*lattice\_cart\s*",
-                # forwardMatch = True,
-                # sections = ["x_onetep_section_cell"],
-                # subMatchers = [
-                #   SM(r"\s*(?P<x_onetep_cell_vector>[-+0-9.eEdD]+\s+[-+0-9.eEdD]+\s+[-+0-9.eEd]+)",
-                #  #SM(r"\s*(?P<onetep_cell_vector>[\d\.]+\s+[\d\.]+\s+[\d\.]+) \s*[-+0-9.eEdD]*\s*[-+0-9.eEdD]*\s*[-+0-9.eEdD]*",
-                #     endReStr = "\%endblock\s*lattice\_cart\s*",
-                #     repeats = True),
+                        ]), # CLOSING onetep_section_cell
+                SM(name = 'cellInformation',
+                    startReStr = r"\%block\s*lattice\_cart\s*",
+                    # forwardMatch = True,
+                    sections = ["x_onetep_section_cell"],
+                        subMatchers = [
+                            SM(r"\s*(?P<x_onetep_cell_vector>[-+0-9.eEdD]+\s+[-+0-9.eEdD]+\s+[-+0-9.eEd]+)",
+                 #SM(r"\s*(?P<onetep_cell_vector>[\d\.]+\s+[\d\.]+\s+[\d\.]+) \s*[-+0-9.eEdD]*\s*[-+0-9.eEdD]*\s*[-+0-9.eEdD]*",
+                    # endReStr = "\%endblock\s*lattice\_cart\s*",
+                            repeats = True),
 
-                #              ]), # CLOSING onetep_se
-           # atomic positions and cell dimensions
-                SM(startReStr = r"\s\%block\s*positions\_abs\s*",
+                        ]), # CLOSING onet
+                SM(name = 'cellInformation',
+                    startReStr = r"\s*\%block\s*lattice\_cart\s*",
+                    # forwardMatch = True,
+                    sections = ["x_onetep_section_cell"],
+                        subMatchers = [
+                            SM(r"\s*(?P<x_onetep_cell_vector>[-+0-9.eEdD]+\s+[-+0-9.eEdD]+\s+[-+0-9.eEd]+)",
+                 #SM(r"\s*(?P<onetep_cell_vector>[\d\.]+\s+[\d\.]+\s+[\d\.]+) \s*[-+0-9.eEdD]*\s*[-+0-9.eEdD]*\s*[-+0-9.eEdD]*",
+                    # endReStr = "\%endblock\s*lattice\_cart\s*",
+                            repeats = True),
+
+                        ]), # CLOSING onet
+                
+                SM(startReStr = r"\%block\spositions\_abs\s*",
                     forwardMatch = True,
                     sections = ["x_onetep_section_atom_positions"],
                     subMatchers = [
-                    SM(r"\s(?P<x_onetep_store_atom_labels>[A-Za-z0-9])\s*(?P<x_onetep_store_atom_positions>[-\d\.]+\s+[-\d\.]+\s+[-\d\.]+)",
+                    SM(r"(?P<x_onetep_store_atom_labels>[A-Za-z0-9]+)\s*(?P<x_onetep_store_atom_positions>[-\d\.]+\s+[-\d\.]+\s+[-\d\.]+)",
+                        # endReStr = "\n",
+                        repeats = True)
+                
+                             ]), # CLOSING onet               
+                SM(startReStr = r"\s*\%block\spositions\_abs\s*",
+                    forwardMatch = True,
+                    sections = ["x_onetep_section_atom_positions"],
+                    subMatchers = [
+                    SM(r"\s*(?P<x_onetep_store_atom_labels>[A-Za-z0-9]+)\s*(?P<x_onetep_store_atom_positions>[-\d\.]+\s+[-\d\.]+\s+[-\d\.]+)",
+                        # endReStr = "\n",
+                        repeats = True)
+                
+                             ]), # CLOS
+                SM(startReStr = r"\%block\s*positions\_abs\s*",
+                    forwardMatch = True,
+                    sections = ["x_onetep_section_atom_positions"],
+                    subMatchers = [
+                    SM(r"(?P<x_onetep_store_atom_labels>[A-Za-z0-9]+)\s*(?P<x_onetep_store_atom_positions>[-\d\.]+\s+[-\d\.]+\s+[-\d\.]+)",
                         # endReStr = "\n",
                         repeats = True)
                 
                              ]), # CLOSING onetep_section_atom_position
-                # SM(startReStr = r"\%block\s*positions\_abs\s*",
-                #     forwardMatch = True,
-                #     sections = ["x_onetep_section_atom_positions"],
-                #     subMatchers = [
-                #     SM(r"\s*x\s*(?P<x_onetep_store_atom_labels>[A-Za-z0-9]+\s*[0-9.]+)\s*(?P<x_onetep_store_atom_positions>[-\d\.]+\s+[-\d\.]+\s+[-\d\.]+)",
-                #         endReStr = "\n",
-                #         repeats = True)
+                SM(startReStr = r"\s*\%block\s*positions\_abs\s*",
+                    forwardMatch = True,
+                    sections = ["x_onetep_section_atom_positions"],
+                    subMatchers = [
+                    SM(r"\s*(?P<x_onetep_store_atom_labels>[A-Za-z0-9]+)\s*(?P<x_onetep_store_atom_positions>[-\d\.]+\s+[-\d\.]+\s+[-\d\.]+)",
+                        # endReStr = "\n",
+                        repeats = True)
                 
-                #              ]), # CLOSING onetep_secti
+                             ]), # CLOSI
+                
+               
             # atomic positions and cell dimesions
            # SM(startReStr = r"\s*Units of ionic velocities is ANG\/PS\s*",
            #    forwardMatch = True,
