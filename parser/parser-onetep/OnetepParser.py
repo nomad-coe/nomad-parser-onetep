@@ -1469,10 +1469,11 @@ def build_onetepMainFileSimpleMatcher():
                     SM(r"\s*Integrated density\s*\:\s*(?P<x_onetep_integrated_density>[-+0-9.eEdD]*)\s*"), 
                     SM(sections = ['section_scf_iteration'],
                         startReStr = r"\s*[0-9]+\s*(?P<x_onetep_scf_rms_gradient>[+0-9.eEdD]+)\s*(?P<energy_total_scf_iteration>[-+0-9.eEdD]*)\s*(?P<energy_change_scf_iteration>[-+0-9.eEdD]*)\s*[-+0-9.eEdD]*\s*",repeats = True,
-                        subMatchers = [   
-                            SM(r"\s*[0-9]+\s*(?P<x_onetep_scf_rms_gradient>[+0-9.eEdD]+)\s*(?P<energy_total_scf_iteration>[-+0-9.eEdD]*)\s*\<\-\-\sCG\s*",
-                            repeats = True)]),
-              
+                        endReStr = r"\s*[0-9]+\s*[+0-9.eEdD]+\s*[-+0-9.eEdD]*\s*\<\-\-\sCG\s*",
+                        # subMatchers = [   
+                        #     SM(r"\s*[0-9]+\s*(?P<x_onetep_scf_rms_gradient>[+0-9.eEdD]+)\s*(?P<energy_total_scf_iteration>[-+0-9.eEdD]*)\s*\<\-\-\sCG\s*",
+                        #     repeats = True)]),
+                          ),  
                     SM(r"\<QC\>\s*\[NGWF iterations]\:\s*(?P<x_onetep_n_ngwf_iterations>[0-9]*)\s*"),
                     SM(r"\<QC\>\s*\[total\_energy\]\:\s*(?P<energy_total>[-+0-9.eEdD]*)\s*"), # matching final converged total energy
                     SM(r"\<QC\>\s*\[rms\_gradient\]\:\s*(?P<x_onetep_final_rms_gradient>[-+0-9.eEdD]*)\s*"),
