@@ -947,14 +947,14 @@ class OnetepParserContext(object):
         Integrateddensity = section['x_onetep_integrated_density_store']
 
         backend.openSection('section_single_configuration_calculation')
-        backend.addValue('x_onetep_pseudo_local',local_pseudo)
-        backend.addValue('electronic_kinetic_energy',kinetic)
-        backend.addValue('x_onetep_pseudo_non_local',nonlocal_pseudo)
-        backend.addValue('energy_correction_hartree',Hartree)
-        backend.addValue('energy_XC',Exchangecorrelation)
-        backend.addValue('x_onetep_ewald_correction',Ewald)
-        backend.addValue('x_onetep_dispersion_correction',DispersionCorrection)
-        backend.addValue('x_onetep_integrated_density',Integrateddensity)
+        backend.addValue('x_onetep_pseudo_local',local_pseudo[0])
+        backend.addValue('electronic_kinetic_energy',kinetic[0])
+        backend.addValue('x_onetep_pseudo_non_local',nonlocal_pseudo[0])
+        backend.addValue('energy_correction_hartree',Hartree[0])
+        backend.addValue('energy_XC',Exchangecorrelation[0])
+        backend.addValue('x_onetep_ewald_correction',Ewald[0])
+        backend.addValue('x_onetep_dispersion_correction',DispersionCorrection[0])
+        backend.addValue('x_onetep_integrated_density',Integrateddensity[0])
         backend.closeSection('section_single_configuration_calculation',gIndex)
     
     def onClose_section_run(self, backend, gIndex, section):
