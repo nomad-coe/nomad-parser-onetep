@@ -91,7 +91,7 @@ class OnetepCellParserContext(object):
             
             for i in range(0, self.at_nr):
                 lab[i] = re.sub('\s+', ' ', lab[i]).strip()
-            self.atom_labels_store.append(lab)
+            self.atom_labels_store.extend(lab)
             
 
 
@@ -104,17 +104,9 @@ def build_OnetepCellFileSimpleMatcher():
     Returns:
        SimpleMatcher that parses *.cell file of Onetep.
     """
-    # return SM (name = 'Root1',
-    #     startReStr = "",
-    #     sections = ['section_run'],
-    #     forwardMatch = True,
-    #     subFlags = SM.SubFlags.Unordered,
-    #     weak = True,
-    #     subMatchers = [
+ 
     return SM(name = "systemDescription",
                 startReStr = "",
-                # subFlags = SM.SubFlags.Unordered,
-            # startReStr = r"\stask\s*\:\sSINGLEPOINT",
                 forwardMatch = True,
                 sections = ["section_system"],
                 subMatchers = [
@@ -266,7 +258,7 @@ def get_cachingLevelForMetaName(metaInfoEnv, CachingLvl):
     """
     # manually adjust caching of metadata
     cachingLevelForMetaName = {
-                               # 'section_k_band': CachingLvl,
+                               'section_system': CachingLvl,
                                 # 'section_run': CachingLvl,
                                 # 'section_single_configuration_calculation': CachingLvl,
                               }
