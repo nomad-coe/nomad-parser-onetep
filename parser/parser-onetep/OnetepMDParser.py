@@ -14,7 +14,7 @@ import logging, os, re, sys
 
 
 ############################################################
-# This is the parser for the *.md file of Onetep.
+# This is the parser for the *.md file of onetep.
 ############################################################
 
 logger = logging.getLogger("nomad.OnetepMDParser")
@@ -59,28 +59,30 @@ class OnetepMDParserContext(object):
         """
         self.parser = parser
     
-    def onClose_x_Onetep_section_md(self, backend, gIndex, section):
-        temp = section ['x_Onetep_md_temperature']
-        vet_veloc = section ['x_Onetep_md_cell_vectors_vel']
-        velocities = section ['x_Onetep_md_veloc']
-        vet = section ['x_Onetep_md_cell_vectors']
-        forces = section ['x_Onetep_md_forces']
-        atoms_lab = section ['x_Onetep_md_lab']
-        position = section ['x_Onetep_md_positions']
-        press = section ['x_Onetep_md_pressure']
-        energies = section['x_Onetep_md_energies']
-        stress_tensor = section ['x_Onetep_md_stress_tensor']
+    def onClose_x_onetep_section_md(self, backend, gIndex, section):
+        temp = section ['x_onetep_md_temperature']
+        vet_veloc = section ['x_onetep_md_cell_vectors_vel']
+        velocities = section ['x_onetep_md_veloc']
+        vet = section ['x_onetep_md_cell_vectors']
+        forces = section ['x_onetep_md_forces']
+        atoms_lab = section ['x_onetep_md_lab']
+        position = section ['x_onetep_md_positions']
+        press = section ['x_onetep_md_pressure']
+        energies = section['x_onetep_md_energies']
+        stress_tensor = section ['x_onetep_md_stress_tensor']
         
         Hr_J_converter = float(4.35974e-18)
         HrK_to_K_coverter= float(3.1668114e-6)
         
-        for i in range(len(temp)):
-            temp[i] = temp[i]/HrK_to_K_coverter
+        if temp:
+            for i in range(len(temp)):
+                temp[i] = temp[i]/HrK_to_K_coverter
+        
             self.frame_temperature.append(temp[i])
             
-        
-        for i in range(len(press)):
-            press[i] = press[i] / 10e9
+        if press:
+            for i in range(len(press)):
+                press[i] = press[i] / 10e9
             self.frame_pressure.append(press[i])
         
         for i in range(len(temp)):
@@ -142,7 +144,7 @@ class OnetepMDParserContext(object):
             self.total_velocities.append(self.md_veloc)
       
         if forces is not None:
-
+            print (forces,'ciao')
             self.md_forces = []
             for f in forces:                
                 f = f.split()
@@ -158,13 +160,13 @@ class OnetepMDParserContext(object):
 
 
 def build_OnetepMDFileSimpleMatcher():
-    """Builds the SimpleMatcher to parse the *.md file of Onetep.
+    """Builds the SimpleMatcher to parse the *.md file of onetep.
 
     SimpleMatchers are called with 'SM (' as this string has length 4,
     which allows nice formating of nested SimpleMatchers in python.
 
     Returns:
-       SimpleMatcher that parses *.md file of Onetep.
+       SimpleMatcher that parses *.md file of onetep.
     """
     return SM (name = 'Root1',
         startReStr = "",
@@ -173,19 +175,19 @@ def build_OnetepMDFileSimpleMatcher():
         weak = True,
         subMatchers = [
             SM (name = 'Root2',
-            startReStr =r"\s*(?P<x_Onetep_md_energies>[-+0-9.eEdD]+\s*[-+0-9.eEdD]+\s*[-+0-9.eEdD]+)\s*\<\-\-\sE\s*",
+            startReStr =r"\s*(?P<x_onetep_md_energies>[-+0-9.eEdD]+\s*[-+0-9.eEdD]+\s*[-+0-9.eEdD]+)\s*\<\-\-\sE\s*",
             endReStr ="/n",
-            sections = ['x_Onetep_section_md'],
+            sections = ['x_onetep_section_md'],
             repeats = True,
             subMatchers = [
-                SM (r"\s*(?P<x_Onetep_md_temperature>[-+0-9.eEdD]+)\s*\<\-\-\sT\s*"),
-                SM (r"\s*(?P<x_Onetep_md_pressure>[-+0-9.eEdD]+)\s*\<\-\-\sP\s*"),
-                SM (r"\s*(?P<x_Onetep_md_cell_vectors>[-+0-9.eEdD]+\s*[-+0-9.eEdD]+\s*[-+0-9.eEdD]+)\s*\<\-\-\sh\s",repeats = True),
-                SM (r"\s*(?P<x_Onetep_md_cell_vectors_vel>[-+0-9.eEdD]+\s*[-+0-9.eEdD]+\s*[-+0-9.eEdD]+)\s*\<\-\-\sh[a-z]\s*",repeats = True),
-                SM (r"\s*(?P<x_Onetep_md_stress_tensor>[-+0-9.eEdD]+\s*[-+0-9.eEdD]+\s*[-+0-9.eEdD]+)\s*\<\-\-\sS\s",repeats = True),
-                SM(r"\s(?P<x_Onetep_md_lab>[A-Za-z]+\s*[0-9.]+)\s*(?P<x_Onetep_md_positions>[-+0-9.eEdD]+\s*[-+0-9.eEdD]+\s*[-+0-9.eEdD]+)\s*\<\-\-\sR\s*",repeats = True),
-                SM(r"\s[A-Za-z]+\s*[0-9.]+\s*(?P<x_Onetep_md_veloc>[-+0-9.eEdD]+\s*[-+0-9.eEdD]+\s*[-+0-9.eEdD]+)\s*\<\-\-\sV\s*",repeats = True),
-                SM(r"\s[A-Za-z]+\s*[0-9.]+\s*(?P<x_Onetep_md_forces>[-+0-9.eEdD]+\s*[-+0-9.eEdD]+\s*[-+0-9.eEdD]+)\s*\<\-\-\sF\s*",repeats = True,endReStr ="/n"),
+                SM (r"\s*(?P<x_onetep_md_temperature>[-+0-9.eEdD]+)\s*\<\-\-\sT\s*"),
+                SM (r"\s*(?P<x_onetep_md_pressure>[-+0-9.eEdD]+)\s*\<\-\-\sP\s*"),
+                SM (r"\s*(?P<x_onetep_md_cell_vectors>[-+0-9.eEdD]+\s*[-+0-9.eEdD]+\s*[-+0-9.eEdD]+)\s*\<\-\-\sh\s",repeats = True),
+                SM (r"\s*(?P<x_onetep_md_cell_vectors_vel>[-+0-9.eEdD]+\s*[-+0-9.eEdD]+\s*[-+0-9.eEdD]+)\s*\<\-\-\sh[a-z]\s*",repeats = True),
+                SM (r"\s*(?P<x_onetep_md_stress_tensor>[-+0-9.eEdD]+\s*[-+0-9.eEdD]+\s*[-+0-9.eEdD]+)\s*\<\-\-\sS\s",repeats = True),
+                SM(r"\s(?P<x_onetep_md_lab>[A-Za-z]+\s*[0-9.]+)\s*(?P<x_onetep_md_positions>[-+0-9.eEdD]+\s*[-+0-9.eEdD]+\s*[-+0-9.eEdD]+)\s*\<\-\-\sR\s*",repeats = True),
+                SM(r"\s[A-Za-z]+\s*[0-9.]+\s*(?P<x_onetep_md_veloc>[-+0-9.eEdD]+\s*[-+0-9.eEdD]+\s*[-+0-9.eEdD]+)\s*\<\-\-\sV\s*",repeats = True),
+                SM(r"\s[A-Za-z]+\s*[0-9.]+\s*(?P<x_onetep_md_forces>[-+0-9.eEdD]+\s*[-+0-9.eEdD]+\s*[-+0-9.eEdD]+)\s*\<\-\-\sF\s*",repeats = True,endReStr ="/n"),
 
             ]),
         ])
@@ -207,20 +209,20 @@ def get_cachingLevelForMetaName(metaInfoEnv, CachingLvl):
         Dictionary with metaname as key and caching level as value.
     """
     # manually adjust caching of metadata
-    cachingLevelForMetaName = { 'x_Onetep_md_energies':CachingLevel.Cache,
-                                'x_Onetep_md_forces':CachingLevel.Cache,
-                                'x_Onetep_md_veloc':CachingLevel.Cache,       
-                                'x_Onetep_md_lab':CachingLevel.Cache,
-                                'x_Onetep_md_positions':CachingLevel.Cache,
-                                'x_Onetep_md_temperature':CachingLevel.Cache,
-                                'x_Onetep_md_pressure':CachingLevel.Cache,
-                                'x_Onetep_md_cell_vectors_vel':CachingLevel.Cache,
-                                'x_Onetep_md_cell_vectors':CachingLevel.Cache,
-                                'x_Onetep_md_stress_tensor':CachingLevel.Cache,
+    cachingLevelForMetaName = { 'x_onetep_md_energies':CachingLevel.Cache,
+                                'x_onetep_md_forces':CachingLevel.Cache,
+                                'x_onetep_md_veloc':CachingLevel.Cache,       
+                                'x_onetep_md_lab':CachingLevel.Cache,
+                                'x_onetep_md_positions':CachingLevel.Cache,
+                                'x_onetep_md_temperature':CachingLevel.Cache,
+                                'x_onetep_md_pressure':CachingLevel.Cache,
+                                'x_onetep_md_cell_vectors_vel':CachingLevel.Cache,
+                                'x_onetep_md_cell_vectors':CachingLevel.Cache,
+                                'x_onetep_md_stress_tensor':CachingLevel.Cache,
                                 
                               
                                 'section_run': CachingLvl,
-                                'x_Onetep_section_md': CachingLvl,
+                                'x_onetep_section_md': CachingLvl,
                                # 'section_single_configuration_calculation': CachingLvl,
                               }
     # Set all band metadata to Cache as they need post-processsing.
@@ -233,7 +235,7 @@ def get_cachingLevelForMetaName(metaInfoEnv, CachingLvl):
 def main(CachingLvl):
     """Main function.
 
-    Set up everything for the parsing of the Onetep *.cell file and run the parsing.
+    Set up everything for the parsing of the onetep *.cell file and run the parsing.
 
     Args:
         CachingLvl: Sets the CachingLevel for the sections k_band, run, and single_configuration_calculation.
@@ -241,11 +243,11 @@ def main(CachingLvl):
     """
     # get band.out file description
     OnetepMDFileSimpleMatcher = build_OnetepMDFileSimpleMatcher()
-    # loading metadata from nomad-meta-info/meta_info/nomad_meta_info/Onetep.nomadmetainfo.json
-    metaInfoPath = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)),"../../../../nomad-meta-info/meta_info/nomad_meta_info/Onetep.nomadmetainfo.json"))
+    # loading metadata from nomad-meta-info/meta_info/nomad_meta_info/onetep.nomadmetainfo.json
+    metaInfoPath = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)),"../../../../nomad-meta-info/meta_info/nomad_meta_info/onetep.nomadmetainfo.json"))
     metaInfoEnv = get_metaInfo(metaInfoPath)
     # set parser info
-    parserInfo = {'name':'Onetep-md-parser', 'version': '1.0'}
+    parserInfo = {'name':'onetep-md-parser', 'version': '1.0'}
     # get caching level for metadata
     cachingLevelForMetaName = get_cachingLevelForMetaName(metaInfoEnv, CachingLvl)
     # start parsing

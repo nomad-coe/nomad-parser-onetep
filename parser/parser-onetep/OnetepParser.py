@@ -170,16 +170,17 @@ class OnetepParserContext(object):
         
         n_ngwf = section['x_onetep_n_ngwf_atom_store']
         radius = section['x_onetep_ngwf_radius_store']
-        for i in range(len(mass)):
-            #converting mass in Kg from AMU
-            # mass[i] = float(mass[i]) * 1.66053904e-27
+        if mass:
+            for i in range(len(mass)):
+                #converting mass in Kg from AMU
+                # mass[i] = float(mass[i]) * 1.66053904e-27
 
-            backend.openSection('section_atom_type')
-            backend.addValue('atom_type_mass', float(mass[i]))
-            backend.addValue('atom_type_name', name[i])
-            backend.closeSection('section_atom_type', gIndex+i)
-            backend.addValue('x_onetep_n_ngwf_atom', n_ngwf[i])
-            backend.addValue('x_onetep_ngwf_radius', radius[i])
+                backend.openSection('section_atom_type')
+                backend.addValue('atom_type_mass', float(mass[i]))
+                backend.addValue('atom_type_name', name[i])
+                backend.closeSection('section_atom_type', gIndex+i)
+                backend.addValue('x_onetep_n_ngwf_atom', n_ngwf[i])
+                backend.addValue('x_onetep_ngwf_radius', radius[i])
 # Translating the XC functional name to the NOMAD standard
     def onClose_x_onetep_section_functionals(self, backend, gIndex, section):
         """When all the functional definitions have been gathered, matches them
@@ -1052,36 +1053,36 @@ class OnetepParserContext(object):
             backend.closeSection('section_frame_sequence',gIndex)
         
 
-        # MDSuperContext = OnetepMDParser.OnetepMDParserContext(False)
-        # MDParser = AncillaryParser(
-        #     fileDescription = OnetepMDParser.build_onetepMDFileSimpleMatcher(),
-        #     parser = self.parser,
-        #     cachingLevelForMetaName = OnetepMDParser.get_cachingLevelForMetaName(self.metaInfoEnv, CachingLevel.Ignore),
-        #     superContext = MDSuperContext)
+        MDSuperContext = OnetepMDParser.OnetepMDParserContext(False)
+        MDParser = AncillaryParser(
+            fileDescription = OnetepMDParser.build_OnetepMDFileSimpleMatcher(),
+            parser = self.parser,
+            cachingLevelForMetaName = OnetepMDParser.get_cachingLevelForMetaName(self.metaInfoEnv, CachingLevel.Ignore),
+            superContext = MDSuperContext)
 
-        # extFile = ".md"       # Find the file with extension .cell
-        # dirName = os.path.dirname(os.path.abspath(self.fName))
-        # cFile = str()
-        # for file in os.listdir(dirName):
-        #     if file.endswith(extFile):
-        #         cFile = file
-        # fName = os.path.normpath(os.path.join(dirName, cFile))
+        extFile = ".md"       # Find the file with extension .cell
+        dirName = os.path.dirname(os.path.abspath(self.fName))
+        cFile = str()
+        for file in os.listdir(dirName):
+            if file.endswith(extFile):
+                cFile = file
+        fName = os.path.normpath(os.path.join(dirName, cFile))
 
-        #  # parsing *.cell file to get the k path segments
-        # if file.endswith(extFile):   
-        #     with open(fName) as fIn:
-        #         MDParser.parseFile(fIn)
+         # parsing *.cell file to get the k path segments
+        if file.endswith(extFile):   
+            with open(fName) as fIn:
+                MDParser.parseFile(fIn)
             
-        #     self.frame_temp = MDSuperContext.frame_temperature  # recover k path segments coordinartes from *.cell file
-        #     self.frame_press= MDSuperContext.frame_pressure
-        #     self.frame_kinetic = MDSuperContext.kinetic
-        #     self.frame_potential = MDSuperContext.hamiltonian
-        #     self.frame_atom_forces = MDSuperContext.total_forces
-        #     self.frame_atom_veloc = MDSuperContext.total_velocities
-        #     self.frame_stress_tensor = MDSuperContext.frame_stress_tensor
-        #     self.frame_position =MDSuperContext.total_positions
-        #     self.frame_cell=MDSuperContext.frame_cell
-        #     self.frame_vet_velocities =MDSuperContext.vector_velocities
+            self.frame_temp = MDSuperContext.frame_temperature  # recover k path segments coordinartes from *.cell file
+            self.frame_press= MDSuperContext.frame_pressure
+            self.frame_kinetic = MDSuperContext.kinetic
+            self.frame_potential = MDSuperContext.hamiltonian
+            self.frame_atom_forces = MDSuperContext.total_forces
+            self.frame_atom_veloc = MDSuperContext.total_velocities
+            self.frame_stress_tensor = MDSuperContext.frame_stress_tensor
+            self.frame_position =MDSuperContext.total_positions
+            self.frame_cell=MDSuperContext.frame_cell
+            self.frame_vet_velocities =MDSuperContext.vector_velocities
             
 
             
@@ -1869,6 +1870,36 @@ def build_onetepMainFileSimpleMatcher():
                     
                     repeats = True),
                  ]) 
+    Orbital_SubMatcher = SM (name = 'Orbital Information',
+            startReStr = r"\=\=\=\=\=\=\=\=\=\=\=\=\=\=\=\=\=\=\= Orbital energy and occupancy information \=\=\=\=\=\=\=\=\=\=\=\=\=\=\=\=\=\=\=\s*",
+            sections = ['x_onetep_section_orbital_information'],
+            forwardMatch = True,
+            # endReStr = "\n",
+            endReStr =r"\s*\.\.\.\.\.\.\.\s*\-\-\- gap \-\-\s*\.\.\.\.\.\.\.\.\.\s*",
+            
+            subMatchers = [ 
+                SM(r"\s*Total number of orbitals\:\s*(?P<x_onetep_total_number_orbitals>[0-9]+)\s*"),
+                SM(r"\s*Number of occupied orbitals\:\s*(?P<x_onetep_total_number_occ_orbitals>[0-9]+)\s*"),
+                SM(r"\s*Occupancy sum\:\s*(?P<x_onetep_occupancy_sum>[\d\.]+)\s*"),
+                SM(r"\s*HOMO\-LUMO gap\:\s*(?P<x_onetep_homo_lumo_gap>[\d\.]+)\s*"),
+                SM(r"\s*Mid\-gap level\:\s*(?P<x_onetep_mid_gap>[\d\.]+)\s*"), 
+                SM(r"\s*(?P<x_onetep_orbital_number>[0-9]+)\s*(?P<x_onetep_orbital_energy>[-\d\.]+)\s*(?P<x_onetep_orbital_occupancy>[\d\.]+)\s*",repeats=True),  
+                 ]) 
+    Orbital_SubMatcher_2 = SM (name = 'Orbital Information',
+            startReStr = r"\s*\.\.\.\.\.\.\.\s*\-\-\- gap \-\-\s*\.\.\.\.\.\.\.\.\.\s*",
+            sections = ['x_onetep_section_orbital_information'],
+            
+            endReStr = "\n",
+            # endReStr =r"\s*\.\.\.\.\.\.\.\s*\-\-\- gap \-\-\s*\.\.\.\.\.\.\.\.\.\s*",
+            
+            subMatchers = [ 
+                SM(r"\s*Total number of orbitals\:\s*(?P<x_onetep_total_number_orbitals>[0-9]+)\s*"),
+                SM(r"\s*Number of occupied orbitals\:\s*(?P<x_onetep_total_number_occ_orbitals>[0-9]+)\s*"),
+                SM(r"\s*Occupancy sum\:\s*(?P<x_onetep_occupancy_sum>[\d\.]+)\s*"),
+                SM(r"\s*HOMO\-LUMO gap\:\s*(?P<x_onetep_homo_lumo_gap>[\d\.]+)\s*"),
+                SM(r"\s*Mid\-gap level\:\s*(?P<x_onetep_mid_gap>[\d\.]+)\s*"), 
+                SM(r"\s*(?P<x_onetep_orbital_number>[0-9]+)\s*(?P<x_onetep_orbital_energy>[-\d\.]+)\s*(?P<x_onetep_orbital_occupancy>[\d\.]+)\s*",repeats=True),  
+                 ]) 
     ########################################
     # return main Parser ###################
     ########################################
@@ -1910,8 +1941,10 @@ def build_onetepMainFileSimpleMatcher():
 
                 calculationMethodSubMatcher,
                 basisSetCellAssociatedSubMatcher,
+      
                 SM(name = 'Atom_topology',
-                  startReStr = r"\%block species\s*",              
+                  startReStr = r"\%block\s*species\s*",              
+                  
                   # endReStr = r"\%endblock species\s*",  
                   #forwardMatch = True,
                   sections = ['section_topology'],
@@ -1920,8 +1953,7 @@ def build_onetepMainFileSimpleMatcher():
                       SM(r"[0-9a-zA-Z]+\s*(?P<x_onetep_store_atom_name>[a-zA-Z]+)\s*(?P<x_onetep_store_atom_mass>[0-9.]+)\s*(?P<x_onetep_n_ngwf_atom_store>[0-9.]+)\s*(?P<x_onetep_ngwf_radius_store>[\d\.]+)\s*",
                         #endReStr = "\n",   
                         repeats = True),
-                     ]), # CLOSING section_atom_topology
-
+                     ]), # CLOSI
                 ElectronicParameterSubMatcher,
                 
                 
@@ -2039,6 +2071,9 @@ def build_onetepMainFileSimpleMatcher():
                 
                 Mulliken_SubMatcher,
                 
+                Orbital_SubMatcher,
+                
+                Orbital_SubMatcher_2 ,
                 SM(name = 'calc_time',
                     startReStr = r"\-\-\-*\sTIMING INFORMATION\s\-\-\-*",
                     sections = ['x_onetep_section_time'],
