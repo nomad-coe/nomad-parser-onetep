@@ -1512,7 +1512,20 @@ def build_onetepMainFileSimpleMatcher():
 
          ])
     
-    
+    KernelOptimSubMatcher_edft = SM(name= 'energy_components',
+                                    startReStr = r"\>\>\> Density kernel optimised for the current NGWF basis\:",
+                                    sections = ['x_onetep_section_kernel_optimisation'],
+                                    
+                                    repeats = True,
+
+                subMatchers = [                     
+                    SM(r"\s*Total free energy\s*\=\s*(?P<x_onetep_total_free_energy>[-+0-9.eEdD]*)\s*"),
+                    SM(r"\s*Total energy\s*\=\s*(?P<x_onetep_total_energy>[-+0-9.eEdD]*)\s*"), # matching final converged total energy
+                    SM(r"\s*Estimated bandgap\s*\=\s*(?P<x_onetep_band_gap>[-+0-9.eEdD]*)\s*"),
+                    SM(r"\s*RMS occupancy error\s*\=\s*(?P<x_onetep_rms_occupancy_error>[-+0-9.eEdD]*)\s*"),
+                    SM(r"\s*\[H\,K\] commutator\s*\=\s*(?P<x_onetep_commutator>[-+0-9.eEdD]*)\s*"),
+                    ])
+   
     KernelOptimSubMatcher = SM(name= 'energy_components',
                                     startReStr = r"\>\>\> Density kernel optimised for the current NGWF basis\:",
                                     sections = ['x_onetep_section_kernel_optimisation'],
@@ -1520,7 +1533,7 @@ def build_onetepMainFileSimpleMatcher():
                                     repeats = True,
 
                 subMatchers = [                     
-                    
+                    SM(r"\s*Total free energy\s*\=\s*(?P<x_onetep_total_free_energy>[-+0-9.eEdD]*)\s*"),
                     SM(r"\s*Total energy\s*\=\s*(?P<x_onetep_total_energy>[-+0-9.eEdD]*)\s*"), # matching final converged total energy
                     SM(r"\s*Estimated bandgap\s*\=\s*(?P<x_onetep_band_gap>[-+0-9.eEdD]*)\s*"),
                     SM(r"\s*RMS occupancy error\s*\=\s*(?P<x_onetep_rms_occupancy_error>[-+0-9.eEdD]*)\s*"),
@@ -1546,6 +1559,41 @@ def build_onetepMainFileSimpleMatcher():
                     SM(r"\s*Integrated density\s*\:\s*(?P<x_onetep_integrated_density_store>[-+0-9.eEdD]*)\s*"), 
 
                     ])
+    
+    edft_SubMatcher = SM (name = 'EDFT submatcher',
+            sections = ['x_onetep_section_edft'],
+            startReStr = r"\-\-\-\-* Ensemble\-DFT optimisation \-\-\-\-*", 
+            repeats = True,
+            # endReStr = r"\-*\s*",
+            subMatchers = [ 
+                SM (name = 'EDFT submatcher',
+                sections = ['x_onetep_section_edft_iterations'],
+                startReStr = r"\#\s*(?P<x_onetep_edft_iteration>[0-9]+)\s*(?P<x_onetep_edft_rms_gradient>[-\d\.]+)\s*(?P<x_onetep_edft_commutator>[\d\.]+)\s*(?P<x_onetep_edft_free_energy>[\d\.]+)",
+                repeats = True,
+                # endReStr = r"\-*\s*",
+                    subMatchers = [ 
+                        SM(r"\#\s*(?P<x_onetep_edft_iteration>[0-9]+)\s*(?P<x_onetep_edft_rms_gradient>[-\d\.]+)\s*(?P<x_onetep_edft_commutator>[\d\.]+)\s*(?P<x_onetep_edft_free_energy>[\d\.]+)"),  
+                        SM(r"Step\s*\=\s*(?P<x_onetep_edft_step>[\d\.]+)\s*"), 
+                        SM(r"Energy\s*\=\s*(?P<x_onetep_edft_energy>[\d\.]+)\s*"), 
+                        SM(r"Est\. 0K Energy 0\.5\*\(E\+A\)\s*\=\s*(?P<x_onetep_edft_0K>[\d\.]+)\s*"), 
+                        SM(r"Residual Non\-orthogonality \=\s*(?P<x_onetep_residual_nonorthog>[\d\.]+)\s*"), 
+                        SM(r"Residual N\_electrons\s*\=\s*(?P<x_onetep_residual_n_elec>[\d\.]+)\s*"), 
+                        SM (name = 'EDFT submatcher',
+                            sections = ['x_onetep_section_edft_spin'],
+                            startReStr = r"\s*(?P<x_onetep_edft_spin_type>[0-9]+)\s*(?P<x_onetep_edft_n_electrons>[\d\.]+)\s*(?P<x_onetep_edft_fermi_level>[-\d\.]+)\s*(?P<x_onetep_edft_fermi_level_delta>[-\d\.]+)",
+                            repeats = True,
+                            # endReStr = r"\s*\-\-\-\-\-\-\s*",
+                            subMatchers = [ 
+                                     SM (name = 'EDFT submatcher',
+                                        sections = ['x_onetep_section_edft_spin_iterations'],
+                                        startReStr = r"\s*(?P<x_onetep_edft_orbital_iteration_spin>[0-9]+)\s\|\s*(?P<x_onetep_edft_eigenvalue>[-\d\.]+)\s*(?P<x_onetep_edft_occupancy>[-\d\.]+)\s\|",
+                                        repeats = True,
+                                                
+                                            )]),
+                        KernelOptimSubMatcher_edft,
+                     
+                     ]) ])
+                
     KernelOptimSubMatcher_frame = SM(name= 'energy_components',
                                     startReStr = r"\>\>\> Density kernel optimised for the current NGWF basis\:",
                                     sections = ['x_onetep_section_kernel_optimisation'],
@@ -1553,14 +1601,14 @@ def build_onetepMainFileSimpleMatcher():
                                     repeats = True,
 
                 subMatchers = [                     
-                    
+                    SM(r"\s*Total free energy\s*\=\s*(?P<x_onetep_total_free_energy>[-+0-9.eEdD]*)\s*"),
                     SM(r"\s*Total energy\s*\=\s*(?P<x_onetep_total_energy>[-+0-9.eEdD]*)\s*"), # matching final converged total energy
                     SM(r"\s*Estimated bandgap\s*\=\s*(?P<x_onetep_band_gap>[-+0-9.eEdD]*)\s*"),
                     SM(r"\s*RMS occupancy error\s*\=\s*(?P<x_onetep_rms_occupancy_error>[-+0-9.eEdD]*)\s*"),
                     SM(r"\s*\[H\,K\] commutator\s*\=\s*(?P<x_onetep_commutator>[-+0-9.eEdD]*)\s*"),
                     ])
 
-
+    
     energycomponentsSubMatcher_frame = SM(name= 'energy_components',
                                     startReStr = r"\s*\-\-\-\-\-\-\-\-\-\-* ENERGY COMPONENTS \(Eh\) \-\-\-\-\-\-\-\-\-\-\-*",
                                     # endReStr = r"\sBFGS\:\sfinished iteration\s*\0\s*",
@@ -1579,19 +1627,30 @@ def build_onetepMainFileSimpleMatcher():
                     SM(r"\s*Integrated density\s*\:\s*(?P<x_onetep_integrated_density_store>[-+0-9.eEdD]*)\s*"), 
 
                     ])
-
+    
     singlepointSubMatcher = SM(name = 'single_point',
                 # startReStr = r"\s*\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\- ENERGY COMPONENTS \(Eh\) \-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-" or              
-                startReStr = r"\>\>\> Density kernel optimised for the current NGWF basis\:",
+                startReStr = r"\s*\<\<\<\<\< CALCULATION SUMMARY \>\>\>\>\>\s*",
+                # startReStr = r"\>\>\> Density kernel optimised for the current NGWF basis\:",
                 forwardMatch = True,
                 # startReStr = r"\s*\<* CALCULATION SUMMARY \>*\s*", 
                 endReStr = r"\sBFGS\:\sfinished iteration\s*0\s",
                 sections = ["section_single_configuration_calculation"],
                 subMatchers = [ 
-                    KernelOptimSubMatcher,
-                    energycomponentsSubMatcher,
+                    
+
+                    
+                    SM(sections = ['section_scf_iteration'],
+                        startReStr = r"\s*[0-9]+\s*(?P<x_onetep_scf_rms_gradient>[+0-9.eEdD]+)\s*(?P<energy_total_scf_iteration>[-+0-9.eEdD]*)\s*\<\-\-\sCG\s*"),
+                        # endReStr = r"\s*[0-9]+\s*(?P<x_onetep_scf_rms_gradient>[+0-9.eEdD]+)\s*(?P<energy_total_scf_iteration>[-+0-9.eEdD]*)\s*\<\-\-\sCG\s*",
+                        # endReStr = r"\s*[0-9]+\s*[+0-9.eEdD]+\s*[-+0-9.eEdD]*\s*\<\-\-\sCG\s*",
+                        # subMatchers = [   
+                        #     SM(r"\s*[0-9]+\s*(?P<x_onetep_scf_rms_gradient>[+0-9.eEdD]+)\s*(?P<energy_total_scf_iteration>[-+0-9.eEdD]*)\s*\<\-\-\sCG\s*",
+                        #     repeats = True)]),
+                          
                     SM(sections = ['section_scf_iteration'],
                         startReStr = r"\s*[0-9]+\s*(?P<x_onetep_scf_rms_gradient>[+0-9.eEdD]+)\s*(?P<energy_total_scf_iteration>[-+0-9.eEdD]*)\s*(?P<energy_change_scf_iteration>[-+0-9.eEdD]*)\s*[-+0-9.eEdD]*\s*",repeats = True,
+                        # endReStr = r"\s*[0-9]+\s*(?P<x_onetep_scf_rms_gradient>[+0-9.eEdD]+)\s*(?P<energy_total_scf_iteration>[-+0-9.eEdD]*)\s*\<\-\-\sCG\s*",
                         endReStr = r"\s*[0-9]+\s*[+0-9.eEdD]+\s*[-+0-9.eEdD]*\s*\<\-\-\sCG\s*",
                         # subMatchers = [   
                         #     SM(r"\s*[0-9]+\s*(?P<x_onetep_scf_rms_gradient>[+0-9.eEdD]+)\s*(?P<energy_total_scf_iteration>[-+0-9.eEdD]*)\s*\<\-\-\sCG\s*",
@@ -1888,18 +1947,25 @@ def build_onetepMainFileSimpleMatcher():
     Orbital_SubMatcher_2 = SM (name = 'Orbital Information',
             startReStr = r"\s*\.\.\.\.\.\.\.\s*\-\-\- gap \-\-\s*\.\.\.\.\.\.\.\.\.\s*",
             sections = ['x_onetep_section_orbital_information'],
+            forwardMatch = True,
+            endReStr = r"\s*\.\.\.\.\.\.\.\s*\.*\s*\.\.\.\.\.\.\.\.\.\s*",
+            # endReStr =r"\s*\.\.\.\.\.\.\.\s*\-\-\- gap \-\-\s*\.\.\.\.\.\.\.\.\.\s*",
+            
+            subMatchers = [ 
+                SM(r"\s*(?P<x_onetep_orbital_number>[0-9]+)\s*(?P<x_onetep_orbital_energy>[-\d\.]+)\s*(?P<x_onetep_orbital_occupancy>[\d\.]+)\s*",repeats=True),  
+                 ]) 
+    Orbital_SubMatcher_3 = SM (name = 'Orbital Information',
+            startReStr = r"\s*\.\.\.\.\.\.\.\s*\.*\s*\.\.\.\.\.\.\.\.\.\s*",
+            sections = ['x_onetep_section_orbital_information'],
             
             endReStr = "\n",
             # endReStr =r"\s*\.\.\.\.\.\.\.\s*\-\-\- gap \-\-\s*\.\.\.\.\.\.\.\.\.\s*",
             
             subMatchers = [ 
-                SM(r"\s*Total number of orbitals\:\s*(?P<x_onetep_total_number_orbitals>[0-9]+)\s*"),
-                SM(r"\s*Number of occupied orbitals\:\s*(?P<x_onetep_total_number_occ_orbitals>[0-9]+)\s*"),
-                SM(r"\s*Occupancy sum\:\s*(?P<x_onetep_occupancy_sum>[\d\.]+)\s*"),
-                SM(r"\s*HOMO\-LUMO gap\:\s*(?P<x_onetep_homo_lumo_gap>[\d\.]+)\s*"),
-                SM(r"\s*Mid\-gap level\:\s*(?P<x_onetep_mid_gap>[\d\.]+)\s*"), 
                 SM(r"\s*(?P<x_onetep_orbital_number>[0-9]+)\s*(?P<x_onetep_orbital_energy>[-\d\.]+)\s*(?P<x_onetep_orbital_occupancy>[\d\.]+)\s*",repeats=True),  
                  ]) 
+    
+
     ########################################
     # return main Parser ###################
     ########################################
@@ -2012,6 +2078,9 @@ def build_onetepMainFileSimpleMatcher():
           #                      repeats = True,),
                 # KernelOptimSubMatcher,
                 # energycomponentsSubMatcher,
+                edft_SubMatcher,
+                KernelOptimSubMatcher,
+                energycomponentsSubMatcher,
                 singlepointSubMatcher,
                 geomOptimSubMatcher,
                 # TSSubMatcher,
@@ -2074,6 +2143,8 @@ def build_onetepMainFileSimpleMatcher():
                 Orbital_SubMatcher,
                 
                 Orbital_SubMatcher_2 ,
+                
+                Orbital_SubMatcher_3,
                 SM(name = 'calc_time',
                     startReStr = r"\-\-\-*\sTIMING INFORMATION\s\-\-\-*",
                     sections = ['x_onetep_section_time'],
