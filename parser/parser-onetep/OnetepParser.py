@@ -382,7 +382,11 @@ class OnetepParserContext(object):
         self.initial_scf_iter_time = section['x_onetep_initial_scf_iteration_wall_time']
         
         f_st = section['x_onetep_store_atom_forces']
-        
+        f_ion = section['x_onetep_store_atom_ionforces']
+        f_local=section['x_onetep_store_atom_localforces']
+        f_nonlocal=section['x_onetep_store_atom_nonlocalforces']
+        f_noself=section['x_onetep_store_atom_nonselfforces']
+        f_correc=section['x_onetep_store_atom_corrforces']
         if f_st is not None:# and self.at_nr_opt is not None:
             for i in range(0, len(f_st)):
                 f_st[i] = f_st[i].split()
@@ -409,6 +413,64 @@ class OnetepParserContext(object):
             
             pass        
 # Add SCF k points and eigenvalue from *.band file to the backend (ONLY FOR SINGLE POINT CALCULATIONS AT THIS STAGE)
+        if f_ion is not None:# and self.at_nr_opt is not None:
+            for i in range(0, len(f_ion)):
+                f_ion[i] = f_ion[i].split()
+                f_ion[i] = [float(j) for j in f_ion[i]]
+                f_ion_int = f_ion[i]
+                self.atom_forces_ion = []     
+                self.atom_forces_ion.extend(f_ion)
+                    
+                self.atom_forces_ion = self.atom_forces_ion[-len(f_ion):] 
+                    
+            backend.addArrayValues('x_onetep_atom_ionforces', np.asarray(self.atom_forces_ion))
+        if f_local is not None:# and self.at_nr_opt is not None:
+            for i in range(0, len(f_local)):
+                f_local[i] = f_local[i].split()
+                f_local[i] = [float(j) for j in f_local[i]]
+                f_local_int = f_local[i]
+                self.atom_forces_local = []     
+                self.atom_forces_local.extend(f_local)
+                    
+                self.atom_forces_local = self.atom_forces_local[-len(f_local):] 
+                    
+            backend.addArrayValues('x_onetep_atom_local_potentialforces', np.asarray(self.atom_forces_local))    
+        if f_nonlocal is not None:# and self.at_nr_opt is not None:
+            for i in range(0, len(f_nonlocal)):
+                f_nonlocal[i] = f_nonlocal[i].split()
+                f_nonlocal[i] = [float(j) for j in f_nonlocal[i]]
+                f_nonlocal_int = f_nonlocal[i]
+                self.atom_forces_nonlocal = []     
+                self.atom_forces_nonlocal.extend(f_nonlocal)
+                    
+                self.atom_forces_nonlocal = self.atom_forces_nonlocal[-len(f_nonlocal):] 
+                    
+            backend.addArrayValues('x_onetep_atom_nonlocal_potentialforces', np.asarray(self.atom_forces_nonlocal))  
+        
+        if f_noself is not None:# and self.at_nr_opt is not None:
+            for i in range(0, len(f_noself)):
+                f_noself[i] = f_noself[i].split()
+                f_noself[i] = [float(j) for j in f_noself[i]]
+                f_noself_int = f_noself[i]
+                self.atom_forces_nonself = []     
+                self.atom_forces_nonself.extend(f_noself)
+                    
+                self.atom_forces_nonself = self.atom_forces_nonself[-len(f_noself):] 
+                    
+            backend.addArrayValues('x_onetep_atom_nonself_forces',np.asarray(self.atom_forces_nonself))      
+        
+        if f_correc is not None:# and self.at_nr_opt is not None:
+            for i in range(0, len(f_correc)):
+                f_correc[i] = f_correc[i].split()
+                f_correc[i] = [float(j) for j in f_correc[i]]
+                f_correc_int = f_correc[i]
+                self.atom_forces_correc = []     
+                self.atom_forces_correc.extend(f_correc)
+                    
+                self.atom_forces_correc = self.atom_forces_correc[-len(f_correc):] 
+                    
+            backend.addArrayValues('x_onetep_atom_correction_forces',np.asarray(self.atom_forces_correc))  
+
         for i in range(len(self.n_spin_channels)):
             if self.n_spin_channels[i]==1:
   
@@ -1715,8 +1777,42 @@ def build_onetepMainFileSimpleMatcher():
                     SM(r"\<QC\>\s*\[NGWF iterations]\:\s*(?P<x_onetep_n_ngwf_iterations>[0-9]*)\s*"),
                     SM(r"\<QC\>\s*\[total\_energy\]\:\s*(?P<energy_total>[-+0-9.eEdD]*)\s*"), # matching final converged total energy
                     SM(r"\<QC\>\s*\[rms\_gradient\]\:\s*(?P<x_onetep_final_rms_gradient>[-+0-9.eEdD]*)\s*"),
-    
-                 
+                        
+                    SM(startReStr = r"\*\*\*\*\**\sIon\-Ion forces\s*\*\*\*\*\**\s*",
+                         endReStr = r"TOTAL\:\s*",
+                         subMatchers = [
+                                    
+                                    SM(r"\*\s*[A-Za-z]+\s*[0-9]+\s*(?P<x_onetep_store_atom_ionforces>[-\d\.]+\s+[-\d\.]+\s+[-\d\.]+)\s\*",
+                                        repeats = True)
+                         ]), 
+                    SM(startReStr = r"\*\*\*\*\** Local potential forces \*\*\*\*\**\s*",
+                         endReStr = r"TOTAL\:\s*",
+                         subMatchers = [
+                                    
+                                    SM(r"\*\s*[A-Za-z]+\s*[0-9]+\s*(?P<x_onetep_store_atom_localforces>[-\d\.]+\s+[-\d\.]+\s+[-\d\.]+)\s\*",
+                                        repeats = True)
+                         ]), 
+                    SM(startReStr = r"\*\*\*\*\** Non\-Local potential forces \*\*\*\*\**\s*",
+                         endReStr = r"TOTAL\:\s*",
+                         subMatchers = [
+                                    
+                                    SM(r"\*\s*[A-Za-z]+\s*[0-9]+\s*(?P<x_onetep_store_atom_nonlocalforces>[-\d\.]+\s+[-\d\.]+\s+[-\d\.]+)\s\*",
+                                        repeats = True)
+                         ]), 
+                     SM(startReStr = r"\*\*\*\*\** NGWF non self\-consistent forces \*\*\*\*\**\s*",
+                         endReStr = r"TOTAL\:\s*",
+                         subMatchers = [
+                                    
+                                    SM(r"\*\s*[A-Za-z]+\s*[0-9]+\s*(?P<x_onetep_store_atom_nonselfforces>[-\d\.]+\s+[-\d\.]+\s+[-\d\.]+)\s\*",
+                                        repeats = True)
+                         ]), 
+                    SM(startReStr = r"\*\*\** Correction to ensure the total force is zero \*\*\**\s*",
+                         endReStr = r"TOTAL\:\s*",
+                         subMatchers = [
+                                    
+                                    SM(r"\*\s*[A-Za-z]+\s*[0-9]+\s*(?P<x_onetep_store_atom_corrforces>[-\d\.]+\s+[-\d\.]+\s+[-\d\.]+)\s\*",
+                                        repeats = True)
+                         ]), 
                     SM(startReStr = r"\*\*\*\*\** Forces \*\*\*\*\**\s*",
                          subMatchers = [
                                     
