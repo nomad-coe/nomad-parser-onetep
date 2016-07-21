@@ -991,6 +991,26 @@ class OnetepParserContext(object):
         else: 
             pass    
 
+    def onClose_x_onetep_section_dipole(self, backend, gIndex, section):
+        electronic=section['x_onetep_electronic_dipole_moment_store']
+        ionic=section['x_onetep_ionic_dipole_moment_store']
+        total=section['x_onetep_total_dipole_moment_store'] 
+        if electronic:
+            self.electronic_dipole =[]
+            self.electronic_dipole.extend(electronic)
+            
+            backend.addArrayValues('x_onetep_electronic_dipole_moment',np.asarray(self.electronic_dipole))
+        if ionic:
+            self.ionic_dipole =[]
+            self.ionic_dipole.extend(ionic)
+   
+            backend.addArrayValues('x_onetep_ionic_dipole_moment',np.asarray(self.ionic_dipole))
+        if total:
+            self.total_dipole =[]
+            self.total_dipole.extend(total)
+   
+            backend.addArrayValues('x_onetep_total_dipole_moment',np.asarray(self.total_dipole))
+    
     def onClose_x_onetep_section_energy_components(self, backend, gIndex, section):        
         ######### Caching energy components #######
         self.kinetic = section['x_onetep_electronic_kinetic_energy']
@@ -1003,6 +1023,25 @@ class OnetepParserContext(object):
         self.DispersionCorrection =section['x_onetep_dispersion_correction_store'] 
         self.Integrateddensity = section['x_onetep_integrated_density_store']
 
+    def onClose_x_onetep_section_orbital_information(self, backend, gIndex, section): 
+        number=section['x_onetep_orbital_number_store']
+        energy=section['x_onetep_orbital_energy_store']
+        occupancy=section['x_onetep_orbital_occupancy_store'] 
+        if number:
+            self.orb_number =[]
+            self.orb_number.extend(number)
+            
+            backend.addArrayValues('x_onetep_orbital_number',np.asarray(self.orb_number))
+        if energy:
+            self.orb_energy =[]
+            self.orb_energy.extend(energy)
+   
+            backend.addArrayValues('x_onetep_orbital_energy',np.asarray(self.orb_energy))
+        if occupancy:
+            self.orb_occ =[]
+            self.orb_occ.extend(occupancy)
+   
+            backend.addArrayValues('x_onetep_orbital_occupancy',np.asarray(self.orb_occ))
     
     def onClose_section_run(self, backend, gIndex, section):
         
@@ -1970,7 +2009,7 @@ def build_onetepMainFileSimpleMatcher():
                 SM(r"\s*Occupancy sum\:\s*(?P<x_onetep_occupancy_sum>[\d\.]+)\s*"),
                 SM(r"\s*HOMO\-LUMO gap\:\s*(?P<x_onetep_homo_lumo_gap>[\d\.]+)\s*"),
                 SM(r"\s*Mid\-gap level\:\s*(?P<x_onetep_mid_gap>[\d\.]+)\s*"), 
-                SM(r"\s*(?P<x_onetep_orbital_number>[0-9]+)\s*(?P<x_onetep_orbital_energy>[-\d\.]+)\s*(?P<x_onetep_orbital_occupancy>[\d\.]+)\s*",repeats=True),  
+                SM(r"\s*(?P<x_onetep_orbital_number_store>[0-9]+)\s*(?P<x_onetep_orbital_energy_store>[-\d\.]+)\s*(?P<x_onetep_orbital_occupancy_store>[\d\.]+)\s*",repeats=True),  
                  ]) 
     Orbital_SubMatcher_2 = SM (name = 'Orbital Information',
             startReStr = r"\s*\.\.\.\.\.\.\.\s*\-\-\- gap \-\-\s*\.\.\.\.\.\.\.\.\.\s*",
@@ -1980,7 +2019,7 @@ def build_onetepMainFileSimpleMatcher():
             # endReStr =r"\s*\.\.\.\.\.\.\.\s*\-\-\- gap \-\-\s*\.\.\.\.\.\.\.\.\.\s*",
             
             subMatchers = [ 
-                SM(r"\s*(?P<x_onetep_orbital_number>[0-9]+)\s*(?P<x_onetep_orbital_energy>[-\d\.]+)\s*(?P<x_onetep_orbital_occupancy>[\d\.]+)\s*",repeats=True),  
+                SM(r"\s*(?P<x_onetep_orbital_number_store>[0-9]+)\s*(?P<x_onetep_orbital_energy_store>[-\d\.]+)\s*(?P<x_onetep_orbital_occupancy_store>[\d\.]+)\s*",repeats=True),  
                  ]) 
     Orbital_SubMatcher_3 = SM (name = 'Orbital Information',
             startReStr = r"\s*\.\.\.\.\.\.\.\s*\.*\s*\.\.\.\.\.\.\.\.\.\s*",
@@ -1990,10 +2029,30 @@ def build_onetepMainFileSimpleMatcher():
             # endReStr =r"\s*\.\.\.\.\.\.\.\s*\-\-\- gap \-\-\s*\.\.\.\.\.\.\.\.\.\s*",
             
             subMatchers = [ 
-                SM(r"\s*(?P<x_onetep_orbital_number>[0-9]+)\s*(?P<x_onetep_orbital_energy>[-\d\.]+)\s*(?P<x_onetep_orbital_occupancy>[\d\.]+)\s*",repeats=True),  
+                SM(r"\s*(?P<x_onetep_orbital_number_store>[0-9]+)\s*(?P<x_onetep_orbital_energy_store>[-\d\.]+)\s*(?P<x_onetep_orbital_occupancy_store>[\d\.]+)\s*",repeats=True),  
                  ]) 
     
-
+    Dipole_moments = SM (name = 'Dipole moments',
+            startReStr = r"\=\=\=\=\=*\s* Dipole Moment Calculation \=\=\=\=\=*\s*",
+            sections = ['x_onetep_section_dipole'],
+            
+            # endReStr = r"\=*\s*",
+            # endReStr =r"\s*\.\.\.\.\.\.\.\s*\-\-\- gap \-\-\s*\.\.\.\.\.\.\.\.\.\s*",
+            
+            subMatchers = [ 
+                SM(r"Electronic dipole moment \(e\.bohr\)\:\s*dx\s\=\s*(?P<x_onetep_electronic_dipole_moment_store>[-\d\.]+)\s*"),  
+                SM(r"\s*dy\s\=\s*(?P<x_onetep_electronic_dipole_moment_store>[-\d\.]+)\s*") ,
+                SM(r"\s*dz\s\=\s*(?P<x_onetep_electronic_dipole_moment_store>[-\d\.]+)\s*"),
+                SM(r"\s*Magnitude\s\(e\.bohr\)\:\s*(?P<x_onetep_electronic_dipole_moment_magnitude>[-\d\.]+)\s*"),
+                SM(r"\s*Ionic dipole moment \(e\.bohr\)\:\s*dx\s\=\s*(?P<x_onetep_ionic_dipole_moment_store>[-\d\.]+)\s*"),  
+                SM(r"\s*dy\s\=\s*(?P<x_onetep_ionic_dipole_moment_store>[-\d\.]+)\s*") ,
+                SM(r"\s*dz\s\=\s*(?P<x_onetep_ionic_dipole_moment_store>[-\d\.]+)\s*"),
+                SM(r"\s*Magnitude\s\(e\.bohr\)\:\s*(?P<x_onetep_ionic_dipole_moment_magnitude>[-\d\.]+)\s*"),
+                SM(r"\s*Total dipole moment \(e\.bohr\)\:\s*dx\s\=\s*(?P<x_onetep_total_dipole_moment_store>[-\d\.]+)\s*"),  
+                SM(r"\s*dy\s\=\s*(?P<x_onetep_total_dipole_moment_store>[-\d\.]+)\s*"), 
+                SM(r"\s*dz\s\=\s*(?P<x_onetep_total_dipole_moment_store>[-\d\.]+)\s*"),
+                SM(r"\s*Magnitude\s\(e\.bohr\)\:\s*(?P<x_onetep_total_dipole_moment_magnitude>[-\d\.]+)\s*"),
+                 ]) 
     ########################################
     # return main Parser ###################
     ########################################
@@ -2165,7 +2224,7 @@ def build_onetepMainFileSimpleMatcher():
                 # # geomOptimSubMatcherDMD,
                 # # geomOptimSubMatcherDI,
                 geomOptim_finalSubMatcher,            
-                
+                Dipole_moments,
                 Mulliken_SubMatcher,
                 Natural_SubMatcher,
                 Orbital_SubMatcher,
@@ -2241,6 +2300,12 @@ def get_cachingLevelForMetaName(metaInfoEnv):
                                 'x_onetep_energy_correction_hartree_store':CachingLevel.Cache,
                                 'x_onetep_energy_XC_store':CachingLevel.Cache,
                                 'x_onetep_ewald_correction_store':CachingLevel.Cache,
+                                'x_onetep_electronic_dipole_moment_store':CachingLevel.Cache,
+                                'x_onetep_ionic_dipole_moment_store':CachingLevel.Cache,
+                                'x_onetep_total_dipole_moment_store' :CachingLevel.Cache,
+                                'x_onetep_orbital_occupancy_store':CachingLevel.Cache,
+                                'x_onetep_orbital_number_store':CachingLevel.Cache,
+                                'x_onetep_orbital_energy_store':CachingLevel.Cache,
                                 'x_onetep_dispersion_correction_store' :CachingLevel.Cache,
                                 'x_onetep_integrated_density_store':CachingLevel.Cache,
                                 }
