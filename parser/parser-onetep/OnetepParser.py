@@ -806,7 +806,24 @@ class OnetepParserContext(object):
                 backend.addArrayValues('x_onetep_vibrationl_frequencies', np.asarray(self.frequencies[-len(self.nr_iter):])) 
                 backend.addArrayValues('x_onetep_ir', np.asarray(self.irr_repres[-len(self.nr_iter):]))
             
-    def onClose_x_onetep_section_population_analysis(self, backend, gIndex, section):
+    def onClose_x_onetep_section_nbo_population_analysis(self, backend, gIndex, section):
+        atom_labels_nbo= section['x_onetep_nbo_atom_label_store']
+        population_nbo=section['x_onetep_total_nbo_population_store']
+        partial_charges=section['x_onetep_nbo_partial_charge_store']
+        self.atoms_lables_nbo = []
+        if atom_labels_nbo:
+            self.atoms_lables_nbo.extend(atom_labels_nbo)
+            backend.addArrayValues('x_onetep_nbo_atom_labels',np.asarray(self.atoms_lables_nbo))
+        self.nbo_populations = []
+        if population_nbo:
+            self.nbo_populations.extend(population_nbo)
+            backend.addArrayValues('x_onetep_total_nbo_population', np.asarray(self.nbo_populations))
+        self.nbo_charges = []    
+        if partial_charges:
+            self.nbo_charges.extend(partial_charges)
+            backend.addArrayValues('x_onetep_nbo_partial_charge',np.asarray(self.nbo_charges))
+
+    def onClose_x_onetep_section_mulliken_population_analysis(self, backend, gIndex, section):
         orb_contr = section['x_onetep_total_orbital_store']
         tot_charge = section ['x_onetep_mulliken_charge_store']
         spin = section['x_onetep_spin_store']
@@ -822,7 +839,7 @@ class OnetepParserContext(object):
         if spin:
             self.total_spin_mulliken.extend(spin)
    
-            backend.addArrayValues('x_onetep_spin',np.asarray(self.total_spin_mulliken))
+            backend.addArrayValues('x_onetep_spin',np.asarray(self.total_spin_mulliken))        
 ######################################################################################
 ###################### Storing k band points and band energies #######################
 ############################# FIRST SPIN CHANNEL #####################################
@@ -1919,13 +1936,24 @@ def build_onetepMainFileSimpleMatcher():
     
     Mulliken_SubMatcher = SM (name = 'Mulliken population analysis',
             startReStr = r"\s*Mulliken Atomic Populations\s*",
-            sections = ['x_onetep_section_population_analysis'],
+            sections = ['x_onetep_section_mulliken_population_analysis'],
             endReStr = r"\s*Bond\s*Population\s*Spin\s*Length\s\(bohr\)\s*",
             #endReStr = r"\s*Bond\s*Population\s*Length\s\(A\)\s*",
             repeats = True,
             subMatchers = [ 
                 SM(r"\s*[a-zA-Z]+\s*[0-9.]+\s*(?P<x_onetep_total_orbital_store>[0-9.]+)\s*(?P<x_onetep_mulliken_charge_store>[0-9.]+)\s*", repeats = True),
                 SM(r"\s*[a-zA-Z]+\s*[0-9.]+\s*(?P<x_onetep_total_orbital_store>[0-9.]+)\s*(?P<x_onetep_mulliken_charge_store>[0-9.]+)\s*(?P<x_onetep_spin_store>[0-9.]+)\s*",       
+                    
+                    repeats = True),
+                 ]) 
+    Natural_SubMatcher = SM (name = 'Natural population analysis',
+            startReStr = r"\s*Natural Population\s*",
+            sections = ['x_onetep_section_nbo_population_analysis'],
+            endReStr = r"\=\=\=\=\=\=*\s*",
+            repeats = True,
+            subMatchers = [ 
+                SM(r"\s(?P<x_onetep_nbo_atom_label_store>[a-zA-Z-0-9]+)\s*[0-9.]+\s*(?P<x_onetep_total_nbo_population_store>[\d\.]+)\s*(?P<x_onetep_nbo_partial_charge_store>[-\d\.]+)\s*", repeats = True),
+                SM(r"\sTotal charge \(e\)\:\s*(?P<x_onetep_nbo_total_charge>[\d\.]+)\s*",
                     
                     repeats = True),
                  ]) 
@@ -2139,7 +2167,7 @@ def build_onetepMainFileSimpleMatcher():
                 geomOptim_finalSubMatcher,            
                 
                 Mulliken_SubMatcher,
-                
+                Natural_SubMatcher,
                 Orbital_SubMatcher,
                 
                 Orbital_SubMatcher_2 ,
@@ -2207,7 +2235,9 @@ def get_cachingLevelForMetaName(metaInfoEnv):
                                 'x_onetep_electronic_kinetic_energy':CachingLevel.Cache,
                                 'x_onetep_pseudo_local_store' :CachingLevel.Cache,
                                 'x_onetep_pseudo_non_local_store':CachingLevel.Cache,
-                                
+                                'x_onetep_nbo_atom_label_store':CachingLevel.Cache,
+                                'x_onetep_total_nbo_population_store':CachingLevel.Cache,
+                                'x_onetep_nbo_partial_charge_store':CachingLevel.Cache,
                                 'x_onetep_energy_correction_hartree_store':CachingLevel.Cache,
                                 'x_onetep_energy_XC_store':CachingLevel.Cache,
                                 'x_onetep_ewald_correction_store':CachingLevel.Cache,

@@ -34,4 +34,13 @@ object OnetepParserSpec_2 extends Specification {
     }
   }
 }
-
+object OnetepParserSpec_3 extends Specification {
+  "OnetepParserTest" >> {
+    "test with json-events" >> {
+      ParserRun.parse(OnetepParser, "parsers/onetep/test/examples/test20/test20.out", "json-events") must_== ParseResult.ParseSuccess
+    }
+    "test with json" >> {
+      ParserRun.parse(OnetepParser, "parsers/onetep/test/examples/test20/test20.out", "json") must_== ParseResult.ParseSuccess
+    }
+  }
+}
