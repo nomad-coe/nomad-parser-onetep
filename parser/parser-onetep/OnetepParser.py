@@ -1429,20 +1429,68 @@ def build_onetepMainFileSimpleMatcher():
             SM(r"\sDFPT solver method\s*\:\s*(?P<x_onetep_DFPT_solver_method>[a-zA-Z0-9.() ]+)"),
             SM(r"\sband convergence tolerance\s*\:\s*(?P<x_onetep_band_tolerance>[-+0-9.eEd]+)"),
                           ])
-
+    edftCalculationSubMatcher = SM(name = 'phonon_calculation',
+        sections = ["x_onetep_section_edft_parameters"],
+        forwardMatch = True,
+        startReStr = r"edft\_",
+        subMatchers = [
+            SM(r"edft_commutator_thres\s*\:\s*(?P<x_onetep_edft_commutator_thres>[-+0-9.eEd]+)"),
+            SM(r"edft_commutator_thres\s*(?P<x_onetep_edft_commutator_thres>[-+0-9.eEd]+)"),
+            SM(r"edft_energy_thres\s*\:\s*(?P<x_onetep_edft_energy_thres>[-+0-9.eEd]+)"),
+            SM(r"edft_energy_thres\s*(?P<x_onetep_edft_energy_thres>[-+0-9.eEd]+)"),
+            SM(r"edft_entropy_thres\s*\:\s*(?P<x_onetep_edft_entropy_thres>[-+0-9.eEd]+)"),
+            SM(r"edft_entropy_thres\s*(?P<x_onetep_edft_entropy_thres>[-+0-9.eEd]+)"),
+            SM(r"edft_fermi_thres\s*\:\s*(?P<x_onetep_edft_fermi_thres>[-+0-9.eEd]+)"),
+            SM(r"edft_fermi_thres\s*(?P<x_onetep_edft_fermi_thres>[-+0-9.eEd]+)"), 
+            SM(r"edft_free_energy_thres\s*\:\s*(?P<x_onetep_edft_free_energy_thres>[-+0-9.eEd]+)"),
+            SM(r"edft_free_energy_thres\s*(?P<x_onetep_edft_free_energy_thres>[-+0-9.eEd]+)"), 
+            SM(r"edft_extra_bands\s*\:\s*(?P<x_onetep_edft_extra_bands>[0-9.]+)"),
+            SM(r"edft_extra_bandst\s*(?P<x_onetep_edft_extra_bands>[0-9.]+)"), 
+            SM(r"edft_maxit\s*\:\s*(?P<x_onetep_edft_maxit>[0-9.]+)"),
+            SM(r"edft_maxit\s*(?P<x_onetep_edft_maxit>[0-9.]+)"), 
+            SM(r"edft_rms_gradient_thres\s*(?P<x_onetep_edft_rms_gradient_thres>[-+0-9.eEd]+)"), 
+            SM(r"edft_rms_gradient_thres\s*\:\s*(?P<x_onetep_edft_rms_gradient_thres>[-+0-9.eEd]+)"), 
+            SM(r"edft_smearing_width\s*(?P<x_onetep_edft_smearing_width>[-+0-9.eEd]+)"), 
+            SM(r"edft_smearing_width\s*\:\s*(?P<x_onetep_edft_smearing_width>[-+0-9.eEd]+)"), 
+                          ])
     GeomOptimParameterSubMatcher = SM(name = 'optimistation_parameters',
         sections = ["section_sampling_method"],
         # sections = ["x_onetep_section_geom_optimisation_method"],
-        startReStr = r"\s\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\ Geometry Optimization Parameters \*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\s*",
+        forwardMatch = True,
+        subFlags = SM.SubFlags.Unordered,
+        startReStr = r"geom\_",
         subMatchers = [
             
-            SM(r"\soptimization method\s*\:\s*(?P<geometry_optimization_method>[a-zA-Z ()]+)"),
-            SM(r"\stotal energy convergence tolerance\s*\:\s*(?P<geometry_optimization_energy_change>[-+0-9.eEd]+)"),
-            SM(r"\smax. number of steps\s*\:\s*(?P<x_onetep_max_number_of_steps>[0-9.]+)"),
-            SM(r"\s*max ionic \|force\| tolerance\s*\:\s*(?P<geometry_optimization_threshold_force>[-+0-9.eEd]+)"),
-            SM(r"\smax ionic \|displacement\| tolerance\s*\:\s*(?P<geometry_optimization_geometry_change>[-+0-9.eEd]+)"),
-            SM(r"\s*max \|stress component\| tolerance\s*\:\s*(?P<x_onetep_geometry_stress_com_tolerance>[-+0-9.eEd]+)"),
+            SM(r"geom_frequency_est\s*\:\s*(?P<geometry_optimization_frequency_tol>[-+0-9.eEd]+)"),
+            SM(r"geom_frequency_est\s*(?P<geometry_optimization_frequency_tol>[-+0-9.eEd]+)"),
+            SM(r"geom_method\s*\:\s*(?P<geometry_optimization_method>[a-zA-Z ()]+)"),
+            SM(r"geom_method\s*(?P<geometry_optimization_method>[a-zA-Z ()]+)"),
+            SM(r"geom_energy_tol\s*\:\s*(?P<geometry_optimization_energy_change>[-+0-9.eEd]+)"),
+            SM(r"geom_energy_tol\s*(?P<geometry_optimization_energy_change>[-+0-9.eEd]+)"),
+            SM(r"geom_max_iter\s*\:\s*(?P<x_onetep_max_number_of_steps>[0-9.]+)"),
+            SM(r"geom_max_iter\s*(?P<x_onetep_max_number_of_steps>[0-9.]+)"),
+            SM(r"geom_force_tol\s*\:\s*(?P<geometry_optimization_threshold_force>[-+0-9.eEd]+)"),
+            SM(r"geom_force_tol\s*(?P<geometry_optimization_threshold_force>[-+0-9.eEd]+)"),
+            SM(r"geom_disp_tol\s*\:\s*(?P<geometry_optimization_geometry_change>[-+0-9.eEd]+)"),
+            SM(r"geom_disp_tol\s*(?P<geometry_optimization_geometry_change>[-+0-9.eEd]+)"),
+            SM(r"geom_convergence_win\s*\:\s*(?P<geometry_optimization_geometry_conv_win>[0-9.]+)"),
+            SM(r"geom_convergence_win\s*(?P<geometry_optimization_geometry_conv_win>[0-9.]+)"),
                                             ]) # CLOSING converged optmisation
+    
+    ElectronicMinimisParameterSubMatcher = SM(name = 'Elec_min_parameters' ,            
+        sections = ["x_onetep_section_scf_parameters"],
+        forwardMatch = True,
+        subFlags = SM.SubFlags.Unordered,
+        startReStr = r"elec\_",
+        subMatchers = [
+            SM(r"elec_energy_tol\s*\:\s*(?P<x_onetep_energy_threshold_store>[-+0-9.eEd]+)"),
+            SM(r"elec_energy_tol\s*(?P<x_onetep_energy_threshold_store>[-+0-9.eEd]+)"),
+            SM(r"elec_cg_max \s*\:\s*(?P<x_onetep_elec_cg_max>[-+0-9.eEd]+)"),
+            SM(r"elec_cg_max \s*(?P<x_onetep_elec_cg_max>[-+0-9.eEd]+)"),
+            SM(r"elec_force_tol\s*\:\s*(?P<x_onetep_elec_force_tol>[-+0-9.eEd]+)"),
+            SM(r"elec_force_tol\s*(?P<x_onetep_elec_force_tol>[-+0-9.eEd]+)"),
+
+            ])
     
     ElectronicParameterSubMatcher = SM(name = 'Elec_parameters' ,            
         sections = ["section_system"],
@@ -1454,15 +1502,7 @@ def build_onetepMainFileSimpleMatcher():
             # SM(r"\s*number of bands\s*\:\s*(?P<x_onetep_number_of_bands>[0-9.]+)"),
             ])
     
-    ElectronicMinimisParameterSubMatcher = SM(name = 'Elec_min_parameters' ,            
-        sections = ["x_onetep_section_scf_parameters"],
-        startReStr = r"\s\*\*\** Electronic Minimization Parameters \*\*\**\s*",
-        subMatchers = [
-            SM(r"\s*total energy \/ atom convergence tol.\s*\:\s*(?P<x_onetep_energy_threshold_store>[-+0-9.eEd]+)"),
-            SM(r"\s*max. number of SCF cycles\s*\:\s*(?P<x_onetep_max_iter_store>[0-9.]+)"),
-            SM(r"\s*smearing scheme\s*\:\s*(?P<x_onetep_smearing_kind>[A-Za-z]+)"),
-            SM(r"\s*smearing width\s*\:\s*(?P<x_onetep_smearing_width>[0-9.]+)"),
-            ])
+    
     
     DensityMixingParameterSubMatcher = SM(name = 'Density_mixing' ,            
         sections = ["x_onetep_section_density_mixing_parameters"],
@@ -2187,7 +2227,9 @@ def build_onetepMainFileSimpleMatcher():
 
 
                  # section_method
-
+                edftCalculationSubMatcher, 
+                ElectronicMinimisParameterSubMatcher,
+                GeomOptimParameterSubMatcher, 
                 calculationMethodSubMatcher,
                 basisSetCellAssociatedSubMatcher,
       
