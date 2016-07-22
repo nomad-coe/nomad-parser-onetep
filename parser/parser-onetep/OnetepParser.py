@@ -1141,16 +1141,16 @@ def build_onetepMainFileSimpleMatcher():
     # submatcher for section_basis_set_cell_dependent
 
     basisSetCellAssociatedSubMatcher = SM(name = 'planeWaveBasisSet',
-        startReStr = r"cutoff_energy+" or r"kernel_cutoff+",
+        startReStr = r"cutoff_energy+",
         subFlags = SM.SubFlags.Unordered,
         forwardMatch = True,
         sections = ["section_basis_set_cell_dependent"],
         subMatchers = [
-            SM(r"kernel\_cutoff\s+(?P<x_onetep_kernel_cutoff>[0-9.]+)"),
+            
             SM(r"cutoff\_energy\s+(?P<x_onetep_basis_set_planewave_cutoff>[0-9.]+)"),
-            SM(r"kernel\_cutoff\s*\:\s*(?P<x_onetep_kernel_cutoff>[0-9.]+)"),
+           
             SM(r"cutoff\_energy\s*\:\s*(?P<x_onetep_basis_set_planewave_cutoff>[0-9.]+)"),
-            SM(r"kernel\_cutoff\:\s*(?P<x_onetep_kernel_cutoff>[0-9.]+)"),
+           
             SM(r"cutoff\_energy\:\s*(?P<x_onetep_basis_set_planewave_cutoff>[0-9.]+)"),
            
                       ]) # CLOSING SM planeWaveBasisSet
