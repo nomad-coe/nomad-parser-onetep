@@ -1340,7 +1340,7 @@ def build_onetepMainFileSimpleMatcher():
             SM(r"ngwf\_halo\s*(?P<x_onetep_ngwf_halo>[-+0-9.eEd]+)"),
             SM(r"ngwf\_max\_grad\s*\:\s*(?P<x_onetep_ngwf_max_grad>[-+0-9.eEd]+)"),
             SM(r"ngwf\_max\_grad\s*(?P<x_onetep_ngwf_max_grad>[-+0-9.eEd]+)"),
-            SM(r"ngwf\_ngwf\_threshold\_orig\s*\:\s*(?P<ngwf_ngwf_threshold_orig>[-+0-9.eEd]+)"),
+            SM(r"ngwf\_ngwf\_threshold\_orig\s*\:\s*(?P<x_onetep_ngwf_threshold_orig>[-+0-9.eEd]+)"),
             SM(r"ngwf\_ngwf\_threshold\_orig\s*(?P<x_onetep_ngwf_threshold_orig>[-+0-9.eEd]+)"),
             ])
     
