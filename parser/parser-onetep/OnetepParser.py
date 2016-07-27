@@ -136,12 +136,22 @@ class OnetepParserContext(object):
         self.kinetic = []
         self.local_pseudo = [] 
         self.nonlocal_pseudo = []
-        
+        self.pen =[]
         self.Hartree = []
         self.Exchangecorrelation = [] 
         self.Ewald = []
         self.DispersionCorrection =[] 
         self.Integrateddensity = []
+        self.step =[]
+        self.excitations =[]
+        self.oscill_str =[]
+        self.life_time =[]
+        self.tddft_energy =[]   
+    
+    def onClose_x_onetep_section_tddft(self, backend, gIndex, section):
+        energies =['x_onetep_tddft_energy_store']
+        if energies:
+            self.tddft_energy =[]
     def initialize_values(self):
         """ Initializes the values of variables in superContexts that are used to parse different files """
         self.pippo = None
@@ -949,8 +959,43 @@ class OnetepParserContext(object):
    
             backend.addArrayValues('x_onetep_orbital_occupancy',np.asarray(self.orb_occ))
     
+    def onClose_x_onetep_section_tddft_iterations(self, backend, gIndex, section):         
+        penalties =section['x_onetep_tddft_penalties_store']
+        step =section['x_onetep_tddft_step_store']
+        energies =section['x_onetep_tddft_energy_store']
+        if energies:
+            self.tddft_energy =[]
+            self.tddft_energy.extend(energies)
+        if penalties:
+            self.pen.extend(penalties)
+      
+        if step:
 
-
+            self.step.extend(step)
+    def onClose_x_onetep_section_tddft_excitations(self, backend, gIndex, section):         
+        ex_energies =section['x_onetep_tddft_excit_energy_store']
+        oscill =section['x_onetep_tddft_excit_oscill_str_store']
+        life = section['x_onetep_tddft_excit_lifetime_store']
+        if ex_energies:
+            
+            self.excitations.extend(ex_energies)
+        if oscill:
+            
+            self.oscill_str.extend(oscill)
+        if life:
+            
+            self.life_time.extend(life)
+    
+    def onClose_x_onetep_section_tddft(self, backend, gIndex, section):
+        
+        
+        backend.addArrayValues('x_onetep_tddft_energies',np.asarray(self.tddft_energy))
+        backend.addArrayValues('x_onetep_tddft_penalties',np.asarray(self.pen))
+        backend.addArrayValues('x_onetep_tddft_steps',np.asarray(self.step))
+        backend.addArrayValues('x_onetep_tddft_excit_energies',np.asarray(self.excitations))
+        backend.addArrayValues('x_onetep_tddft_excit_oscill_str',np.asarray(self.oscill_str))
+        backend.addArrayValues('x_onetep_tddft_excit_lifetime',np.asarray(self.life_time))
+    
     def onClose_section_run(self, backend, gIndex, section):
         
         f_st_band = section['x_onetep_store_atom_forces_band']
@@ -1306,7 +1351,7 @@ def build_onetepMainFileSimpleMatcher():
 
             ])
     
-    LRTDDFTSubMatcher = SM(name = 'LRTDDFT' ,            
+    LRTDDFT_parametersSubMatcher = SM(name = 'LRTDDFT' ,            
         sections = ["x_onetep_section_tddft_parameters"],
         forwardMatch = True,
         subFlags = SM.SubFlags.Unordered,
@@ -1605,6 +1650,30 @@ def build_onetepMainFileSimpleMatcher():
 
                  ])     
     
+    LRTDDFTSubMatcher = SM(name = 'LRTDDFT',
+                startReStr = r"\s*\|\s*LR\-TDDFT energy\s*\=\s*[+0-9.eEdD]+\s*\|",
+                # startReStr = r"\#* LR\_TDDFT CG iteration\s*[0-9]+\s\#*",             
+                sections = ["x_onetep_section_tddft"],
+                repeats =True,
+                subMatchers = [                     
+                    # SM(r"\s*\|\s*LR\-TDDFT energy\s*\=\s*(?P<x_onetep_tddft_energy_store>[+0-9.eEdD]+)\s*\|"), # matching final converged total free energy
+                    SM(r"\s*\|\s*Change in omega\s*\=\s*(?P<x_onetep_tddft_omega_change>[-+0-9.eEdD]*)"),  # 0K corrected final SCF energy
+                    SM(r"\s*\|\s*RMS gradient\s*\=\s*(?P<x_onetep_tddft_rms_gradient>[+-0-9.eEdD]*)"),
+                    SM(r"\*+ Number of newly converged states\:\s*(?P<x_onetep_tddft_number_conv_states>[0-9.]*)\*+"),
+                    
+                    SM(startReStr = r"\s*\|ITER\|\s*Total Energy\s*\|\s*Penalty value\s*\|\s*step",
+                       sections = ["x_onetep_section_tddft_iterations"], 
+                       subMatchers = [ 
+                           SM(r"\s*[0-9.]+\s*(?P<x_onetep_tddft_energy_store>[+0-9.eEdD]+)+\s*(?P<x_onetep_tddft_penalties_store>[+0-9.eEdD]+)\s*(?P<x_onetep_tddft_step_store>[\d.]+)",repeats = True,endReStr = "\n"),
+                        ]),
+                    SM(startReStr = r"   \|Excitation\|    Energy \(in Ha\)   \|     Oscillator Str\.  \| Lifetime \(in ns\)",
+                       sections = ["x_onetep_section_tddft_excitations"], 
+                       subMatchers = [ 
+                           SM(r"\s*[0-9.]+\s*(?P<x_onetep_tddft_excit_energy_store>[+0-9.eEdD]+)\s*(?P<x_onetep_tddft_excit_oscill_str_store>[\d.]+)\s*(?P<x_onetep_tddft_excit_lifetime_store>[\d.]+)",repeats = True,endReStr = "\n"),
+                        ]),
+
+                    ])
+    
     MDSubMatcher = SM(name = 'MD',
                 startReStr = r"\sStarting MD iteration\s*[0-9.]+\s\.\.\.\s*",             
                 #endReStr = r"BFGS\: finished iteration     0 with enthalpy\= \-2\.14201700E\+002 eV",
@@ -1846,7 +1915,7 @@ def build_onetepMainFileSimpleMatcher():
 
                                   ]), # CLOSING SM ProgramHeader
                 
-                LRTDDFTSubMatcher,
+                LRTDDFT_parametersSubMatcher,
                 NGWFSubMatcher,
                 VanderWaalsParameterSubMatcher,                
                 edftCalculationSubMatcher, 
@@ -1869,7 +1938,7 @@ def build_onetepMainFileSimpleMatcher():
                      ]), # CLOSI
                 
                 ElectronicParameterSubMatcher,
-                
+                LRTDDFTSubMatcher,
                 
                 # ElectronicMinimisParameterSubMatcher,
 
@@ -2004,6 +2073,11 @@ def get_cachingLevelForMetaName(metaInfoEnv):
                                 'x_onetep_section_eigenvalues':CachingLevel.Cache,
                                 'x_onetep_section_k_points':CachingLevel.Cache,
                                 'x_onetep_section_k_band':CachingLevel.Cache,
+                                'x_onetep_tddft_penalties_store':CachingLevel.Cache,
+                                'x_onetep_tddft_energy_store':CachingLevel.Cache,
+                                'x_onetep_tddft_step_store':CachingLevel.Cache,
+                                'x_onetep_tddft_excit_energy_store':CachingLevel.Cache,
+                                "x_onetep_tddft_excit_oscill_str_store":CachingLevel.Cache,
                                 # 'band_energies' : CachingLevel.Cache,
                                 # 'band_k_points' : CachingLevel.Cache,
                                 'x_onetep_basis_set_planewave_cutoff' : CachingLevel.Cache,
