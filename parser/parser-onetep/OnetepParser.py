@@ -1299,11 +1299,49 @@ def build_onetepMainFileSimpleMatcher():
         subMatchers = [
             SM(r"elec\_energy\_tol\s*\:\s*(?P<x_onetep_energy_threshold_store>[-+0-9.eEd]+)"),
             SM(r"elec\_energy\_tol\s*(?P<x_onetep_energy_threshold_store>[-+0-9.eEd]+)"),
-            SM(r"elec\_cg\_max \s*\:\s*(?P<x_onetep_elec_cg_max>[-+0-9.eEd]+)"),
-            SM(r"elec\_cg\_max \s*(?P<x_onetep_elec_cg_max>[-+0-9.eEd]+)"),
+            SM(r"elec\_cg\_max\s*\:\s*(?P<x_onetep_elec_cg_max>[-+0-9.eEd]+)"),
+            SM(r"elec\_cg\_max\s*(?P<x_onetep_elec_cg_max>[-+0-9.eEd]+)"),
             SM(r"elec\_force\_tol\s*\:\s*(?P<x_onetep_elec_force_tol>[-+0-9.eEd]+)"),
             SM(r"elec\_force\_tol\s*(?P<x_onetep_elec_force_tol>[-+0-9.eEd]+)"),
 
+            ])
+    
+    LRTDDFTSubMatcher = SM(name = 'LRTDDFT' ,            
+        sections = ["x_onetep_section_tddft_parameters"],
+        forwardMatch = True,
+        subFlags = SM.SubFlags.Unordered,
+        startReStr = r"lr\_tddft\_",
+        subMatchers = [
+            SM(r"lr\_tddft\_cg_threshold\s*\:\s*(?P<x_onetep_lr_tddft_cg_threshold>[-+0-9.eEd]+)"),
+            SM(r"lr\_tddft\_cg_threshold\s*(?P<x_onetep_lr_tddft_cg_threshold>[-+0-9.eEd]+)"),
+            SM(r"lr\_tddft\_kernel\_cutoff\s*\:\s*(?P<x_onetep_lr_tddft_kernel_cutoff>[-+0-9.eEd]+)"),
+            SM(r"lr\_tddft\_kernel\_cutoff\s*(?P<x_onetep_lr_tddft_kernel_cutoff>[-+0-9.eEd]+)"),
+            SM(r"lr\_tddft\_maxit\_cg\s*\:\s*(?P<x_onetep_lr_tddft_maxit_cg>[0-9.]+)"),
+            SM(r"lr\_tddft\_maxit\_cg\s*(?P<x_onetep_lr_tddft_maxit_cg>[0-9.]+)"),
+            SM(r"lr\_tddft\_maxit\_pen\s*\:\s*(?P<x_onetep_lr_tddft_maxit_pen>[0-9.]+)"),
+            SM(r"lr\_tddft\_maxit\_pen\s*(?P<x_onetep_lr_tddft_maxit_pen>[0-9.]+)"),
+            SM(r"lr\_tddft\_num\_states\s*\:\s*(?P<x_onetep_lr_tddft_num_states>[0-9.]+)"),
+            SM(r"lr\_tddft\_num\_states\s*(?P<x_onetep_lr_tddft_num_states>[0-9.]+)"),
+            SM(r"lr\_tddft\_penalty\_tol\s*\:\s*(?P<x_onetep_lr_tddft_penalty_tol>[-+0-9.eEd]+)"),
+            SM(r"lr\_tddft\_penalty\_tol\s*(?P<x_onetep_lr_tddft_penalty_tol>[-+0-9.eEd]+)"),
+            ])
+    
+    NGWFSubMatcher = SM(name = 'ngwf' ,            
+        sections = ["x_onetep_section_ngwf_parameters"],
+        forwardMatch = True,
+        subFlags = SM.SubFlags.Unordered,
+        startReStr = r"ngwf\_",
+        subMatchers = [
+            SM(r"ngwf\_cg\_max\_step\s*\:\s*(?P<x_onetep_ngwf_cg_max_step>[0-9]+)"),
+            SM(r"ngwf\_cg\_max\_step\s*(?P<x_onetep_ngwf_cg_max_step>[0-9]+)"),
+            SM(r"ngwf\_cg\_type\s*\:\s*(?P<x_onetep_ngwf_cg_type>[A_Z\_]+)"),
+            SM(r"ngwf\_cg\_type\s*(?P<x_onetep_ngwf_cg_type>[A_Z\_]+)"),
+            SM(r"ngwf\_halo\s*\:\s*(?P<x_onetep_ngwf_halo>[-+0-9.eEd]+)"),
+            SM(r"ngwf\_halo\s*(?P<x_onetep_ngwf_halo>[-+0-9.eEd]+)"),
+            SM(r"ngwf\_max\_grad\s*\:\s*(?P<x_onetep_ngwf_max_grad>[-+0-9.eEd]+)"),
+            SM(r"ngwf\_max\_grad\s*(?P<x_onetep_ngwf_max_grad>[-+0-9.eEd]+)"),
+            SM(r"ngwf\_ngwf\_threshold\_orig\s*\:\s*(?P<ngwf_ngwf_threshold_orig>[-+0-9.eEd]+)"),
+            SM(r"ngwf\_ngwf\_threshold\_orig\s*(?P<x_onetep_ngwf_threshold_orig>[-+0-9.eEd]+)"),
             ])
     
     ElectronicParameterSubMatcher = SM(name = 'Elec_parameters' ,            
@@ -1370,25 +1408,6 @@ def build_onetepMainFileSimpleMatcher():
     #         SM(r"\s*max\. steps per iteration\s*\:\s*(?P<x_onetep_spec_max_steps>[0-9.]+)"),
     #         SM(r"\s*number of bands \/ k-point\s*\:\s*(?P<x_onetep_spec_max_bands>[0-9.]+)"),
     #         SM(r"\s*band convergence tolerance\s*\:\s*(?P<x_onetep_spec_tolerance>[-+0-9.eEd]+)"),
-    #         ])
-    
-
-    # TDDFTParameterSubMatcher = SM(name = 'TDDFT' ,            
-    #     sections = ["x_onetep_section_tddft_parameters"],
-    #     startReStr = r"\s\*\*\** Time-Dependent DFT Parameters \*\*\**\s*",
-    #     subMatchers = [
-    #         SM(r"\s*number of excited states \s*\:\s*(?P<x_onetep_tddft_n_excited_states>[0-9.]+)"),
-    #         SM(r"\s*state selected for calculation of forces\s*\:\s*(?P<x_onetep_tddft_n_states_forces>[0-9.]+)"),
-    #         SM(r"\s*state convergence tolerance\s*\:\s*(?P<x_onetep_tddft_state_tolerance>[-+0-9.eEd]+)"),
-    #         SM(r"\s*convergence tolerance window\s*\:\s*(?P<x_onetep_tddft_state_tolerance_window>[0-9.]+)"),
-    #         SM(r"\s*max. number of iterations\s*\:\s*(?P<x_onetep_tddft_max_iter>[0-9.]+)"),
-    #         SM(r"\s*no. of extra (convergence indifferent) states\s*\:\s*(?P<x_onetep_tddft_extra_states>[0-9.]+)"),
-    #         SM(r"\s*using tddft functional\s*\:\s*(?P<x_onetep_tddft_functional>[A-Za-z0-9 + A-Za-z0-9 ]+)"),
-    #         SM(r"\s*Time-Dependent DFT method\s*\:\s*(?P<x_onetep_tddft_method>[A-Za-z]+)"),
-            
-    #         SM(r"\s*matrix eigenvalue method\s*\:\s*(?P<x_onetep_tddft_eigenmethod>[A-Za-z]+)"),
-    #         SM(r"\s*Time-Dependent DFT approximation\s*\:\s*(?P<x_onetep_tddft_approximation>[A-Za-z]+)"),
-    #         SM(r"\s*Time-Dependent DFT position operator\s*\:\s*(?P<x_onetep_tddft_position_op>[A-Za-z]+)"),
     #         ])
 
     
@@ -1827,6 +1846,8 @@ def build_onetepMainFileSimpleMatcher():
 
                                   ]), # CLOSING SM ProgramHeader
                 
+                LRTDDFTSubMatcher,
+                NGWFSubMatcher,
                 VanderWaalsParameterSubMatcher,                
                 edftCalculationSubMatcher, 
                 ElectronicMinimisParameterSubMatcher,
