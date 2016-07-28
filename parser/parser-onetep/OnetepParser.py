@@ -1836,7 +1836,8 @@ def build_onetepMainFileSimpleMatcher():
                  ]) 
     Orbital_SubMatcher_2 = SM (name = 'Orbital Information',
             startReStr = r"\s*\.\.\.\.\.\.\.\s*\-\-\- gap \-\-\s*\.\.\.\.\.\.\.\.\.\s*",
-            sections = ['x_onetep_section_orbital_information'],
+            # sections  =[''],
+            # sections = ['x_onetep_section_orbital_information'],
             forwardMatch = True,
             endReStr = r"\s*\.\.\.\.\.\.\.\s*\.*\s*\.\.\.\.\.\.\.\.\.\s*",
             # endReStr =r"\s*\.\.\.\.\.\.\.\s*\-\-\- gap \-\-\s*\.\.\.\.\.\.\.\.\.\s*",
@@ -1846,8 +1847,8 @@ def build_onetepMainFileSimpleMatcher():
                  ]) 
     Orbital_SubMatcher_3 = SM (name = 'Orbital Information',
             startReStr = r"\s*\.\.\.\.\.\.\.\s*\.*\s*\.\.\.\.\.\.\.\.\.\s*",
-            sections = ['x_onetep_section_orbital_information'],
-            
+            # sections = ['x_onetep_section_orbital_information'],
+            # sections = [''],
             endReStr = "\n",
             # endReStr =r"\s*\.\.\.\.\.\.\.\s*\-\-\- gap \-\-\s*\.\.\.\.\.\.\.\.\.\s*",
             
