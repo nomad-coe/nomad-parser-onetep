@@ -963,6 +963,7 @@ class OnetepParserContext(object):
         penalties =section['x_onetep_tddft_penalties_store']
         step =section['x_onetep_tddft_step_store']
         energies =section['x_onetep_tddft_energy_store']
+       
         if energies:
             self.tddft_energy =[]
             self.tddft_energy.extend(energies)
@@ -970,9 +971,9 @@ class OnetepParserContext(object):
             self.pen.extend(penalties)
       
         if step:
-
             self.step.extend(step)
     def onClose_x_onetep_section_tddft_excitations(self, backend, gIndex, section):         
+        
         ex_energies =section['x_onetep_tddft_excit_energy_store']
         oscill =section['x_onetep_tddft_excit_oscill_str_store']
         life = section['x_onetep_tddft_excit_lifetime_store']
@@ -988,13 +989,18 @@ class OnetepParserContext(object):
     
     def onClose_x_onetep_section_tddft(self, backend, gIndex, section):
         
-        
-        backend.addArrayValues('x_onetep_tddft_energies',np.asarray(self.tddft_energy))
-        backend.addArrayValues('x_onetep_tddft_penalties',np.asarray(self.pen))
-        backend.addArrayValues('x_onetep_tddft_steps',np.asarray(self.step))
-        backend.addArrayValues('x_onetep_tddft_excit_energies',np.asarray(self.excitations))
-        backend.addArrayValues('x_onetep_tddft_excit_oscill_str',np.asarray(self.oscill_str))
-        backend.addArrayValues('x_onetep_tddft_excit_lifetime',np.asarray(self.life_time))
+        if self.tddft_energy: 
+            backend.addArrayValues('x_onetep_tddft_energies',np.asarray(self.tddft_energy))
+        if self.pen:
+            backend.addArrayValues('x_onetep_tddft_penalties',np.asarray(self.pen))
+        if self.step:
+            backend.addArrayValues('x_onetep_tddft_steps',np.asarray(self.step))
+        if self.excitations:
+            backend.addArrayValues('x_onetep_tddft_excit_energies',np.asarray(self.excitations))
+        if self.oscill_str:
+            backend.addArrayValues('x_onetep_tddft_excit_oscill_str',np.asarray(self.oscill_str))
+        if self.life_time:
+            backend.addArrayValues('x_onetep_tddft_excit_lifetime',np.asarray(self.life_time))
     
     def onClose_section_run(self, backend, gIndex, section):
         
@@ -1828,21 +1834,6 @@ def build_onetepMainFileSimpleMatcher():
                     
                     repeats = True),
                  ]) 
-    Orbital_SubMatcher = SM (name = 'Orbital Information',
-            startReStr = r"\=\=\=\=\=\=\=\=\=\=\=\=\=\=\=\=\=\=\= Orbital energy and occupancy information \=\=\=\=\=\=\=\=\=\=\=\=\=\=\=\=\=\=\=\s*",
-            sections = ['x_onetep_section_orbital_information'],
-            forwardMatch = True,
-            # endReStr = "\n",
-            endReStr =r"\s*\.\.\.\.\.\.\.\s*\-\-\- gap \-\-\s*\.\.\.\.\.\.\.\.\.\s*",
-            
-            subMatchers = [ 
-                SM(r"\s*Total number of orbitals\:\s*(?P<x_onetep_total_number_orbitals>[0-9]+)\s*"),
-                SM(r"\s*Number of occupied orbitals\:\s*(?P<x_onetep_total_number_occ_orbitals>[0-9]+)\s*"),
-                SM(r"\s*Occupancy sum\:\s*(?P<x_onetep_occupancy_sum>[\d\.]+)\s*"),
-                SM(r"\s*HOMO\-LUMO gap\:\s*(?P<x_onetep_homo_lumo_gap>[\d\.]+)\s*"),
-                SM(r"\s*Mid\-gap level\:\s*(?P<x_onetep_mid_gap>[\d\.]+)\s*"), 
-                SM(r"\s*(?P<x_onetep_orbital_number_store>[0-9]+)\s*(?P<x_onetep_orbital_energy_store>[-\d\.]+)\s*(?P<x_onetep_orbital_occupancy_store>[\d\.]+)\s*",repeats=True),  
-                 ]) 
     Orbital_SubMatcher_2 = SM (name = 'Orbital Information',
             startReStr = r"\s*\.\.\.\.\.\.\.\s*\-\-\- gap \-\-\s*\.\.\.\.\.\.\.\.\.\s*",
             sections = ['x_onetep_section_orbital_information'],
@@ -1863,6 +1854,25 @@ def build_onetepMainFileSimpleMatcher():
             subMatchers = [ 
                 SM(r"\s*(?P<x_onetep_orbital_number_store>[0-9]+)\s*(?P<x_onetep_orbital_energy_store>[-\d\.]+)\s*(?P<x_onetep_orbital_occupancy_store>[\d\.]+)\s*",repeats=True),  
                  ]) 
+    Orbital_SubMatcher = SM (name = 'Orbital Information',
+            startReStr = r"\=\=\=\=\=\=\=\=\=\=\=\=\=\=\=\=\=\=\= Orbital energy and occupancy information \=\=\=\=\=\=\=\=\=\=\=\=\=\=\=\=\=\=\=\s*",
+            sections = ['x_onetep_section_orbital_information'],
+            forwardMatch = True,
+            # endReStr = "\n",
+            endReStr =r"\s*\.\.\.\.\.\.\.\s*\-\-\- gap \-\-\s*\.\.\.\.\.\.\.\.\.\s*",
+            
+            subMatchers = [ 
+                SM(r"\s*Total number of orbitals\:\s*(?P<x_onetep_total_number_orbitals>[0-9]+)\s*"),
+                SM(r"\s*Number of occupied orbitals\:\s*(?P<x_onetep_total_number_occ_orbitals>[0-9]+)\s*"),
+                SM(r"\s*Occupancy sum\:\s*(?P<x_onetep_occupancy_sum>[\d\.]+)\s*"),
+                SM(r"\s*HOMO\-LUMO gap\:\s*(?P<x_onetep_homo_lumo_gap>[\d\.]+)\s*"),
+                SM(r"\s*Mid\-gap level\:\s*(?P<x_onetep_mid_gap>[\d\.]+)\s*"), 
+                SM(r"\s*(?P<x_onetep_orbital_number_store>[0-9]+)\s*(?P<x_onetep_orbital_energy_store>[-\d\.]+)\s*(?P<x_onetep_orbital_occupancy_store>[\d\.]+)\s*",repeats=True),  
+                Orbital_SubMatcher_2 ,
+                
+                Orbital_SubMatcher_3,
+                 ]) 
+    
     
     Dipole_moments = SM (name = 'Dipole moments',
             startReStr = r"\=\=\=\=\=*\s* Dipole Moment Calculation \=\=\=\=\=*\s*",
@@ -2030,9 +2040,7 @@ def build_onetepMainFileSimpleMatcher():
                 Natural_SubMatcher,
                 Orbital_SubMatcher,
                 
-                Orbital_SubMatcher_2 ,
                 
-                Orbital_SubMatcher_3,
                 
                 SM(name = 'calc_time',
                     startReStr = r"\-\-\-*\sTIMING INFORMATION\s\-\-\-*",
@@ -2078,11 +2086,14 @@ def get_cachingLevelForMetaName(metaInfoEnv):
                                 'x_onetep_tddft_step_store':CachingLevel.Cache,
                                 'x_onetep_tddft_excit_energy_store':CachingLevel.Cache,
                                 "x_onetep_tddft_excit_oscill_str_store":CachingLevel.Cache,
+                                'x_onetep_section_tddft_iterations':CachingLevel.Cache,
+                                'x_onetep_section_tddft_excitations':CachingLevel.Cache,
                                 # 'band_energies' : CachingLevel.Cache,
                                 # 'band_k_points' : CachingLevel.Cache,
                                 'x_onetep_basis_set_planewave_cutoff' : CachingLevel.Cache,
                                 # 'eigenvalues_values': CachingLevel.Cache,
                                 # 'eigenvalues_kpoints':CachingLevel.Cache,
+                                'x_onetep_tddft_excit_lifetime_store':CachingLevel.Cache,
                                 "x_onetep_disp_method_name_store":CachingLevel.Cache,
                                 'x_onetep_total_energy_corrected_for_finite_basis_store': CachingLevel.Cache,
                                 'x_onetep_frame_time':CachingLevel.Cache,
