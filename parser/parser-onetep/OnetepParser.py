@@ -973,11 +973,9 @@ class OnetepParserContext(object):
         energies =section['x_onetep_tddft_energy_store']
        
         if energies:
-            self.tddft_energy =[]
             self.tddft_energy.extend(energies)
         if penalties:
             self.pen.extend(penalties)
-      
         if step:
             self.step.extend(step)
     def onClose_x_onetep_section_tddft_excitations(self, backend, gIndex, section):         
@@ -1602,7 +1600,7 @@ def build_onetepMainFileSimpleMatcher():
     geomOptimSubMatcher =  SM (name = 'geometry_optimisation',
             startReStr = r"\sStarting BFGS iteration\s*(?P<x_onetep_geom_iteration_index>[0-9.]+)\s\.\.\.\s*",
             # sections = ['section_single_configuration_calculation','section_system'],
-            # endReStr = r"\sBFGS\s\:\sFinal Configuration\:\s*", 
+            endReStr = r"\sBFGS\s\:\sFinal Configuration\:\s", 
                      
             repeats = True,
             subMatchers = [               
@@ -1633,17 +1631,17 @@ def build_onetepMainFileSimpleMatcher():
                          ]), 
 
                         
-                        SM(r"\sBFGS\s\:\sGeometry optimization (?P<x_onetep_geom_converged>[a-z]+) to converge after\s*"),
-                        SM(r"\s[A-Za-z]+\:\sGeometry\soptimization\scompleted\s(?P<x_onetep_geom_converged>[a-z]+)\.\s*"),
+                        # SM(r"\sBFGS\s\:\sGeometry optimization (?P<x_onetep_geom_converged>[a-z]+) to converge after\s*"),
+                        # SM(r"\s[A-Za-z]+\:\sGeometry\soptimization\scompleted\s(?P<x_onetep_geom_converged>[a-z]+)\.\s*"),
                         
-                        geomOptim_finalSubMatcher,
+                        # geomOptim_finalSubMatcher,
                         ])
     
     singlepointSubMatcher = SM(name = 'single_point',
                 # startReStr = r"\s*\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\- ENERGY COMPONENTS \(Eh\) \-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-" or              
                 startReStr = r"\s*\<\<\<\<\< CALCULATION SUMMARY \>\>\>\>\>\s*",
                 # startReStr = r"\>\>\> Density kernel optimised for the current NGWF basis\:",
-                forwardMatch = True,
+                
                 # startReStr = r"\s*\<* CALCULATION SUMMARY \>*\s*", 
                 endReStr = r"\sStarting BFGS iteration\s1\s\.\.\.",
                 sections = ["section_single_configuration_calculation","section_system"],
@@ -1713,15 +1711,16 @@ def build_onetepMainFileSimpleMatcher():
                                         repeats = True)
                          ]), 
                     geomOptimSubMatcher,
-                   
-
+                    SM(r"\sBFGS\s\:\sGeometry optimization (?P<x_onetep_geom_converged>[a-z]+) to converge after\s*"),
+                    SM(r"\s[A-Za-z]+\:\sGeometry\soptimization\scompleted\s(?P<x_onetep_geom_converged>[a-z]+)\.\s*"),
+                    geomOptim_finalSubMatcher,
                  ])     
     
     LRTDDFTSubMatcher = SM(name = 'LRTDDFT',
                 startReStr = r"\s*\|\s*LR\-TDDFT energy\s*\=\s*[+0-9.eEdD]+\s*\|",
                 # startReStr = r"\#* LR\_TDDFT CG iteration\s*[0-9]+\s\#*",             
                 sections = ["x_onetep_section_tddft"],
-                repeats =True,
+                # repeats =True,
                 subMatchers = [                     
                     # SM(r"\s*\|\s*LR\-TDDFT energy\s*\=\s*(?P<x_onetep_tddft_energy_store>[+0-9.eEdD]+)\s*\|"), # matching final converged total free energy
                     SM(r"\s*\|\s*Change in omega\s*\=\s*(?P<x_onetep_tddft_omega_change>[-+0-9.eEdD]*)"),  # 0K corrected final SCF energy
@@ -1731,7 +1730,7 @@ def build_onetepMainFileSimpleMatcher():
                     SM(startReStr = r"\s*\|ITER\|\s*Total Energy\s*\|\s*Penalty value\s*\|\s*step",
                        sections = ["x_onetep_section_tddft_iterations"], 
                        subMatchers = [ 
-                           SM(r"\s*[0-9.]+\s*(?P<x_onetep_tddft_energy_store>[+0-9.eEdD]+)+\s*(?P<x_onetep_tddft_penalties_store>[+0-9.eEdD]+)\s*(?P<x_onetep_tddft_step_store>[\d.]+)",repeats = True,endReStr = "\n"),
+                           SM(r"\s*[0-9.]+\s*(?P<x_onetep_tddft_energy_store>[+0-9.eEdD]+)+\s*(?P<x_onetep_tddft_penalties_store>[+0-9.eEdD]+)\s*(?P<x_onetep_tddft_step_store>[\d.]+)",repeats = True),
                         ]),
                     SM(startReStr = r"   \|Excitation\|    Energy \(in Ha\)   \|     Oscillator Str\.  \| Lifetime \(in ns\)",
                        sections = ["x_onetep_section_tddft_excitations"], 
@@ -1957,9 +1956,8 @@ def build_onetepMainFileSimpleMatcher():
                 edft_SubMatcher,
                 KernelOptimSubMatcher,
                 energycomponentsSubMatcher,
-                # singlepointSubMatcher,
-                # geomOptimSubMatcher,
-               
+                singlepointSubMatcher,
+                
 
                 # SM(name = "Vibrational_frequencies",
                 #     sections = ["x_onetep_section_vibrational_frequencies"],
@@ -1995,7 +1993,7 @@ def build_onetepMainFileSimpleMatcher():
                 #                       ]), # CLOSIN
 
 
-                # geomOptim_finalSubMatcher,            
+                      
                 Dipole_moments,
                 Mulliken_SubMatcher,
                 Natural_SubMatcher,
