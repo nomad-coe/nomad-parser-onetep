@@ -429,45 +429,34 @@ class OnetepParserContext(object):
         
         self.initial_scf_iter_time = section['x_onetep_initial_scf_iteration_wall_time']
         
-       
+        hrang_to_N = float(4.359745e-8)
         f_st = section['x_onetep_store_atom_forces']
         f_ion = section['x_onetep_store_atom_ionforces']
         f_local=section['x_onetep_store_atom_localforces']
         f_nonlocal=section['x_onetep_store_atom_nonlocalforces']
         f_noself=section['x_onetep_store_atom_nonselfforces']
         f_correc=section['x_onetep_store_atom_corrforces']
-        if f_st is not None:# and self.at_nr_opt is not None:
+        if f_st:# and self.at_nr_opt is not None:
             
             for i in range(0, len(f_st)):
                 f_st[i] = f_st[i].split()
                 f_st[i] = [float(j) for j in f_st[i]]
-                f_st_int = f_st[i]
-                     
+                
+                f_st_int = f_st[i] 
+                f_st_int = [x * hrang_to_N for x in f_st_int]
+     
                 self.atom_forces.append(f_st_int)
                     
                 self.atom_forces = self.atom_forces[-self.number_of_atoms[0][0]:] 
                     
             backend.addArrayValues('atom_forces', np.asarray(self.atom_forces))
-        else:   
-        #     for i in range(0, self.at_nr_opt):
-        #         f_st[i] = f_st[i].split()
-        #         f_st[i] = [float(j) for j in f_st[i]]
-        #         f_st_int = f_st[i]
-                     
-        #         self.atom_forces.append(f_st_int)
-                    
-        #         self.atom_forces = self.atom_forces[-self.at_nr_opt:] 
-                    
-        #     backend.addArrayValues('atom_forces', np.asarray(self.atom_forces))
-        # elif f_st is not None:
-            
-            pass        
-# Add SCF k points and eigenvalue from *.band file to the backend (ONLY FOR SINGLE POINT CALCULATIONS AT THIS STAGE)
+        
         if f_ion is not None:# and self.at_nr_opt is not None:
             for i in range(0, len(f_ion)):
                 f_ion[i] = f_ion[i].split()
                 f_ion[i] = [float(j) for j in f_ion[i]]
                 f_ion_int = f_ion[i]
+                f_ion_int = [x * hrang_to_N for x in f_ion_int]
                 self.atom_forces_ion = []     
                 self.atom_forces_ion.extend(f_ion)
                     
@@ -479,6 +468,7 @@ class OnetepParserContext(object):
                 f_local[i] = f_local[i].split()
                 f_local[i] = [float(j) for j in f_local[i]]
                 f_local_int = f_local[i]
+                f_local_int = [x * hrang_to_N for x in f_local_int]
                 self.atom_forces_local = []     
                 self.atom_forces_local.extend(f_local)
                     
@@ -490,6 +480,7 @@ class OnetepParserContext(object):
                 f_nonlocal[i] = f_nonlocal[i].split()
                 f_nonlocal[i] = [float(j) for j in f_nonlocal[i]]
                 f_nonlocal_int = f_nonlocal[i]
+                f_nonlocal_int = [x * hrang_to_N for x in f_nonlocal_int]
                 self.atom_forces_nonlocal = []     
                 self.atom_forces_nonlocal.extend(f_nonlocal)
                     
@@ -502,6 +493,7 @@ class OnetepParserContext(object):
                 f_noself[i] = f_noself[i].split()
                 f_noself[i] = [float(j) for j in f_noself[i]]
                 f_noself_int = f_noself[i]
+                f_noself_int = [x * hrang_to_N for x in f_noself_int]
                 self.atom_forces_nonself = []     
                 self.atom_forces_nonself.extend(f_noself)
                     
@@ -514,6 +506,7 @@ class OnetepParserContext(object):
                 f_correc[i] = f_correc[i].split()
                 f_correc[i] = [float(j) for j in f_correc[i]]
                 f_correc_int = f_correc[i]
+                f_correc_int = [x * hrang_to_N for x in f_correc_int]
                 self.atom_forces_correc = []     
                 self.atom_forces_correc.extend(f_correc)
                     

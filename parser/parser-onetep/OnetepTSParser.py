@@ -79,7 +79,7 @@ class OnetepTSParserContext(object):
       
         Hr_J_converter = float(4.35974e-18)
         HrK_to_K_coverter= float(3.1668114e-6)
-        
+        hrang_to_N = float(4.359745e-8)
         for i in energy:
          
             energy = [x * Hr_J_converter for x in energy]
@@ -113,7 +113,7 @@ class OnetepTSParserContext(object):
                 f = f.split()
                 f = [float(k) for k in f]
                 f_st_intts = f
-                
+                f_st_intts = [x * hrang_to_N for x in f_st_intts]
                 self.ts_forces.append(f_st_intts)                 
             self.total_forces.append(self.ts_forces)
              
@@ -131,7 +131,7 @@ class OnetepTSParserContext(object):
         Hr_J_converter = float(4.35974e-18)
         HrK_to_K_coverter= float(3.1668114e-6)
         
-        
+        hrang_to_N = float(4.359745e-8)
             
         self.total_energy_final = Hr_J_converter * energy_final[0]
         # self.total_energy_final = energy_final
@@ -164,6 +164,7 @@ class OnetepTSParserContext(object):
                 f = f.split()
                 f = [float(k) for k in f]
                 f_st_intf = f
+                f_st_intf = [x * hrang_to_N for x in f_st_intf]
                 self.md_forces_final.append(f_st_intf)                
                
             # self.total_forces_final.append(self.md_forces_final)
@@ -179,7 +180,7 @@ class OnetepTSParserContext(object):
         
         Hr_J_converter = float(4.35974e-18)
         HrK_to_K_coverter= float(3.1668114e-6)
-        
+        hrang_to_N = float(4.359745e-8)
         # for i in range (len(path_product)):              
         #     self.path_pro = path_product[i]
    
@@ -215,6 +216,7 @@ class OnetepTSParserContext(object):
                 f = f.split()
                 f = [float(k) for k in f]
                 f_st_intp = f
+                f_st_intp = [x * hrang_to_N for x in f_st_intp]
                 self.md_forces_pro.append(f_st_intp)               
 
     def onClose_section_run(self, backend, gIndex, section):            
