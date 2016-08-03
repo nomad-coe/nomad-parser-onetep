@@ -64,14 +64,14 @@ class OnetepTSParserContext(object):
         """
         self.parser = parser
     
-    def onClose_x_Onetep_section_ts_store(self, backend, gIndex, section):
+    def onClose_x_onetep_section_ts_store(self, backend, gIndex, section):
        
         
-        vet = section ['x_Onetep_ts_cell_vectors_store']
-        forces_ts = section ['x_Onetep_ts_forces_store']
-       
-        position = section ['x_Onetep_ts_positions_store']
-        energy = section['x_Onetep_ts_energy']
+        vet = section ['x_onetep_ts_cell_vectors_store']
+        forces_ts = section ['x_onetep_ts_forces_store']
+        
+        position = section ['x_onetep_ts_positions_store']
+        energy = section['x_onetep_ts_energy']
         # path_step = section ['x_Onetep_ts_path']        
         
         # for i in range (len(path_step)):
@@ -117,13 +117,13 @@ class OnetepTSParserContext(object):
                 self.ts_forces.append(f_st_intts)                 
             self.total_forces.append(self.ts_forces)
              
-    def onClose_x_Onetep_section_ts_final_store(self, backend, gIndex, section):
+    def onClose_x_onetep_section_ts_final_store(self, backend, gIndex, section):
         # path_final_ts = section ['x_Onetep_ts_path_ts_final']  
-        vet_final = section ['x_Onetep_ts_cell_vectors_final_store']
-        forces_final = section ['x_Onetep_ts_forces_final_store']
+        vet_final = section ['x_onetep_ts_cell_vectors_final_store']
+        forces_final = section ['x_onetep_ts_forces_final_store']
         
-        position_final = section ['x_Onetep_ts_positions_final_store']
-        energy_final = section['x_Onetep_ts_energy_final_store']
+        position_final = section ['x_onetep_ts_positions_final_store']
+        energy_final = section['x_onetep_ts_energy_final_store']
         
         # for i in range (len(path_final_ts)):
         #     self.path_final = path_final_ts[i]
@@ -168,13 +168,13 @@ class OnetepTSParserContext(object):
                
             # self.total_forces_final.append(self.md_forces_final)
     
-    def onClose_x_Onetep_section_ts_product_store(self, backend, gIndex, section):
+    def onClose_x_onetep_section_ts_product_store(self, backend, gIndex, section):
          # path_product = section ['x_Onetep_ts_path_product']  
-        vet_pro = section ['x_Onetep_ts_cell_vectors_pro_store']
-        forces_pro = section ['x_Onetep_ts_forces_pro_store']
+        vet_pro = section ['x_onetep_ts_cell_vectors_pro_store']
+        forces_pro = section ['x_onetep_ts_forces_pro_store']
         
-        position_pro = section ['x_Onetep_ts_positions_pro_store']
-        energy_pro = section['x_Onetep_ts_energy_product_store']
+        position_pro = section ['x_onetep_ts_positions_pro_store']
+        energy_pro = section['x_onetep_ts_energy_product_store']
         
         
         Hr_J_converter = float(4.35974e-18)
@@ -218,17 +218,18 @@ class OnetepTSParserContext(object):
                 self.md_forces_pro.append(f_st_intp)               
 
     def onClose_section_run(self, backend, gIndex, section):            
-        path_product = section ['x_Onetep_ts_path_product']  
-        path_final_ts = section ['x_Onetep_ts_path_ts_final']
-        path_step = section ['x_Onetep_ts_path'] 
-        for i in range (len(path_step)):
-            self.path_ts.append(path_step[i])
-
-        for i in range (len(path_product)):              
-            self.path_pro = path_product[i]    
-
-        for i in range (len(path_final_ts)):
-            self.path_final = path_final_ts[i]    
+        path_product = section ['x_onetep_ts_path_product']  
+        path_final_ts = section ['x_onetep_ts_path_ts_final']
+        path_step = section ['x_onetep_ts_path'] 
+        if path_step:
+            for i in range (len(path_step)):
+                self.path_ts.append(path_step[i])
+        if path_product:        
+            for i in range (len(path_product)):              
+                self.path_pro = path_product[i]    
+        if path_final_ts:        
+            for i in range (len(path_final_ts)):
+                self.path_final = path_final_ts[i]    
 
 def build_OnetepTSFileSimpleMatcher():
     """Builds the SimpleMatcher to parse the *.md file of Onetep.
@@ -246,50 +247,50 @@ def build_OnetepTSFileSimpleMatcher():
         weak = True,
         subMatchers = [
             SM (name = 'Root2',
-            startReStr =r"\sLST\s*[0-9.]\s*(?P<x_Onetep_ts_path>[-+0-9.eEdD]+)\s*",
+            startReStr =r"\sLST\s*[0-9.]\s*(?P<x_onetep_ts_path>[-+0-9.eEdD]+)\s*",
             endReStr ="/n",
-            sections = ['x_Onetep_section_ts_store'],
+            sections = ['x_onetep_section_ts_store'],
             repeats = True,
             subMatchers = [
-                SM (r"\s*(?P<x_Onetep_ts_energy>[-+0-9.eEdD]+)\s*[-+0-9.eEdD]+\s*\<\-\-\sE\s*"),
-                SM (r"\s*(?P<x_Onetep_ts_cell_vectors_store>[-+0-9.eEdD]+\s*[-+0-9.eEdD]+\s*[-+0-9.eEdD]+)\s*\<\-\-\sh\s",repeats = True),                    
-                SM(r"\s[A-Za-z]+\s*[0-9.]+\s*(?P<x_Onetep_ts_positions_store>[-+0-9.eEdD]+\s*[-+0-9.eEdD]+\s*[-+0-9.eEdD]+)\s*\<\-\-\sR\s*",repeats = True),
-                SM(r"\s[A-Za-z]+\s*[0-9.]+\s*(?P<x_Onetep_ts_forces_store>[-+0-9.eEdD]+\s*[-+0-9.eEdD]+\s*[-+0-9.eEdD]+)\s*\<\-\-\sF\s*",repeats = True,endReStr ="/n"),
+                SM (r"\s*(?P<x_onetep_ts_energy>[-+0-9.eEdD]+)\s*[-+0-9.eEdD]+\s*\<\-\-\sE\s*"),
+                SM (r"\s*(?P<x_onetep_ts_cell_vectors_store>[-+0-9.eEdD]+\s*[-+0-9.eEdD]+\s*[-+0-9.eEdD]+)\s*\<\-\-\sh\s",repeats = True),                    
+                SM(r"\s*[A-Za-z]+\s*[0-9.]+\s*(?P<x_onetep_ts_positions_store>[-+0-9.eEdD]+\s*[-+0-9.eEdD]+\s*[-+0-9.eEdD]+)\s*\<\-\-\sR\s*",repeats = True),
+                SM(r"\s*[A-Za-z]+\s*[0-9.]+\s*(?P<x_onetep_ts_forces_store>[-+0-9.eEdD]+\s*[-+0-9.eEdD]+\s*[-+0-9.eEdD]+)\s*\<\-\-\sF\s*",repeats = True,endReStr ="/n"),
                 
                    ]), 
             SM (name = 'Root3',
-            startReStr =r"\sQST\s*[0-9.]\s*(?P<x_Onetep_ts_path>[-+0-9.eEdD]+)\s*",
+            startReStr =r"\sQST\s*[0-9.]\s*(?P<x_onetep_ts_path>[-+0-9.eEdD]+)\s*",
             endReStr ="/n",
-            sections = ['x_Onetep_section_ts_store'],
+            sections = ['x_onetep_section_ts_store'],
             repeats = True,
             subMatchers = [
-                SM (r"\s*(?P<x_Onetep_ts_energy>[-+0-9.eEdD]+)\s*[-+0-9.eEdD]+\s*\<\-\-\sE\s*"),
-                SM (r"\s*(?P<x_Onetep_ts_cell_vectors_store>[-+0-9.eEdD]+\s*[-+0-9.eEdD]+\s*[-+0-9.eEdD]+)\s*\<\-\-\sh\s",repeats = True),                    
-                SM(r"\s[A-Za-z]+\s*[0-9.]+\s*(?P<x_Onetep_ts_positions_store>[-+0-9.eEdD]+\s*[-+0-9.eEdD]+\s*[-+0-9.eEdD]+)\s*\<\-\-\sR\s*",repeats = True),
-                SM(r"\s[A-Za-z]+\s*[0-9.]+\s*(?P<x_Onetep_ts_forces_store>[-+0-9.eEdD]+\s*[-+0-9.eEdD]+\s*[-+0-9.eEdD]+)\s*\<\-\-\sF\s*",repeats = True,endReStr ="/n"),
+                SM (r"\s*(?P<x_onetep_ts_energy>[-+0-9.eEdD]+)\s*[-+0-9.eEdD]+\s*\<\-\-\sE\s*"),
+                SM (r"\s*(?P<x_onetep_ts_cell_vectors_store>[-+0-9.eEdD]+\s*[-+0-9.eEdD]+\s*[-+0-9.eEdD]+)\s*\<\-\-\sh\s",repeats = True),                    
+                SM(r"\s*[A-Za-z]+\s*[0-9.]+\s*(?P<x_onetep_ts_positions_store>[-+0-9.eEdD]+\s*[-+0-9.eEdD]+\s*[-+0-9.eEdD]+)\s*\<\-\-\sR\s*",repeats = True),
+                SM(r"\s*[A-Za-z]+\s*[0-9.]+\s*(?P<x_onetep_ts_forces_store>[-+0-9.eEdD]+\s*[-+0-9.eEdD]+\s*[-+0-9.eEdD]+)\s*\<\-\-\sF\s*",repeats = True,endReStr ="/n"),
                 
                    ]), 
             SM (name = 'Root4',
-                startReStr =r"\sTS\s*0\s*(?P<x_Onetep_ts_path_ts_final>[-+0-9.eEdD]+)\s*",
+                startReStr =r"\sTS\s*0\s*(?P<x_onetep_ts_path_ts_final>[-+0-9.eEdD]+)\s*",
                 endReStr ="/n",
-                sections = ['x_Onetep_section_ts_final_store'],
+                sections = ['x_onetep_section_ts_final_store'],
                 repeats = True,
                 subMatchers = [
-                            SM (r"\s*(?P<x_Onetep_ts_energy_final_store>[-+0-9.eEdD]+)\s*[-+0-9.eEdD]+\s*\<\-\-\sE\s*"),
-                            SM (r"\s*(?P<x_Onetep_ts_cell_vectors_final_store>[-+0-9.eEdD]+\s*[-+0-9.eEdD]+\s*[-+0-9.eEdD]+)\s*\<\-\-\sh\s",repeats = True), 
-                            SM(r"\s[A-Za-z]+\s*[0-9.]+\s*(?P<x_Onetep_ts_positions_final_store>[-+0-9.eEdD]+\s*[-+0-9.eEdD]+\s*[-+0-9.eEdD]+)\s*\<\-\-\sR\s*",repeats = True),
-                            SM(r"\s[A-Za-z]+\s*[0-9.]+\s*(?P<x_Onetep_ts_forces_final_store>[-+0-9.eEdD]+\s*[-+0-9.eEdD]+\s*[-+0-9.eEdD]+)\s*\<\-\-\sF\s*",repeats = True,endReStr ="/n"),
+                            SM (r"\s*(?P<x_onetep_ts_energy_final_store>[-+0-9.eEdD]+)\s*[-+0-9.eEdD]+\s*\<\-\-\sE\s*"),
+                            SM (r"\s*(?P<x_onetep_ts_cell_vectors_final_store>[-+0-9.eEdD]+\s*[-+0-9.eEdD]+\s*[-+0-9.eEdD]+)\s*\<\-\-\sh\s",repeats = True), 
+                            SM(r"\s*[A-Za-z]+\s*[0-9.]+\s*(?P<x_onetep_ts_positions_final_store>[-+0-9.eEdD]+\s*[-+0-9.eEdD]+\s*[-+0-9.eEdD]+)\s*\<\-\-\sR\s*",repeats = True),
+                            SM(r"\s*[A-Za-z]+\s*[0-9.]+\s*(?P<x_onetep_ts_forces_final_store>[-+0-9.eEdD]+\s*[-+0-9.eEdD]+\s*[-+0-9.eEdD]+)\s*\<\-\-\sF\s*",repeats = True,endReStr ="/n"),
                     ]),            
             SM (name = 'Root5',
-                startReStr =r"\sPRO\s*0\s*(?P<x_Onetep_ts_path_product>[-+0-9.eEdD]+)\s*",
+                startReStr =r"\sPRO\s*0\s*(?P<x_onetep_ts_path_product>[-+0-9.eEdD]+)\s*",
                 endReStr ="/n",
-                sections = ['x_Onetep_section_ts_product_store'],
+                sections = ['x_onetep_section_ts_product_store'],
                 repeats = True,
                 subMatchers = [
-                            SM (r"\s*(?P<x_Onetep_ts_energy_product_store>[-+0-9.eEdD]+)\s*[-+0-9.eEdD]+\s*\<\-\-\sE\s*"),
-                            SM (r"\s*(?P<x_Onetep_ts_cell_vectors_pro_store>[-+0-9.eEdD]+\s*[-+0-9.eEdD]+\s*[-+0-9.eEdD]+)\s*\<\-\-\sh\s",repeats = True), 
-                            SM(r"\s[A-Za-z]+\s*[0-9.]+\s*(?P<x_Onetep_ts_positions_pro_store>[-+0-9.eEdD]+\s*[-+0-9.eEdD]+\s*[-+0-9.eEdD]+)\s*\<\-\-\sR\s*",repeats = True),
-                            SM(r"\s[A-Za-z]+\s*[0-9.]+\s*(?P<x_Onetep_ts_forces_pro_store>[-+0-9.eEdD]+\s*[-+0-9.eEdD]+\s*[-+0-9.eEdD]+)\s*\<\-\-\sF\s*",repeats = True,endReStr ="/n"),
+                            SM (r"\s*(?P<x_onetep_ts_energy_product_store>[-+0-9.eEdD]+)\s*[-+0-9.eEdD]+\s*\<\-\-\sE\s*"),
+                            SM (r"\s*(?P<x_onetep_ts_cell_vectors_pro_store>[-+0-9.eEdD]+\s*[-+0-9.eEdD]+\s*[-+0-9.eEdD]+)\s*\<\-\-\sh\s",repeats = True), 
+                            SM(r"\s*[A-Za-z]+\s*[0-9.]+\s*(?P<x_onetep_ts_positions_pro_store>[-+0-9.eEdD]+\s*[-+0-9.eEdD]+\s*[-+0-9.eEdD]+)\s*\<\-\-\sR\s*",repeats = True),
+                            SM(r"\s*[A-Za-z]+\s*[0-9.]+\s*(?P<x_onetep_ts_forces_pro_store>[-+0-9.eEdD]+\s*[-+0-9.eEdD]+\s*[-+0-9.eEdD]+)\s*\<\-\-\sF\s*",repeats = True,endReStr ="/n"),
                     ]),          
                 
             ]) 
@@ -312,13 +313,13 @@ def get_cachingLevelForMetaName(metaInfoEnv, CachingLvl):
     # manually adjust caching of metadata
     cachingLevelForMetaName = {
                                  'section_run': CachingLvl,
-                                 'x_Onetep_section_ts_store': CachingLvl,
-                                 'x_Onetep_section_ts_final_store': CachingLvl,
-                                 'x_Onetep_section_ts_product_store': CachingLvl,   
+                                 # 'x_onetep_section_ts_store': CachingLvl,
+                                 # 'x_onetep_section_ts_final_store': CachingLvl,
+                                 # 'x_onetep_section_ts_product_store': CachingLvl,   
                               }
     # Set all band metadata to Cache as they need post-processsing.
     for name in metaInfoEnv.infoKinds:
-        if name.startswith('x_Onetep_'):
+        if name.startswith('x_onetep_'):
             cachingLevelForMetaName[name] = CachingLevel.Cache
     return cachingLevelForMetaName
 
@@ -335,7 +336,7 @@ def main(CachingLvl):
     # get band.out file description
     OnetepTSFileSimpleMatcher = build_OnetepTSFileSimpleMatcher()
     # loading metadata from nomad-meta-info/meta_info/nomad_meta_info/Onetep.nomadmetainfo.json
-    metaInfoPath = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)),"../../../../nomad-meta-info/meta_info/nomad_meta_info/Onetep.nomadmetainfo.json"))
+    metaInfoPath = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)),"../../../../nomad-meta-info/meta_info/nomad_meta_info/onetep.nomadmetainfo.json"))
     metaInfoEnv = get_metaInfo(metaInfoPath)
     # set parser info
     parserInfo = {'name':'Onetep-ts-parser', 'version': '1.0'}

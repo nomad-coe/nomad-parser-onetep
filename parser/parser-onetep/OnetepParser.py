@@ -1074,6 +1074,69 @@ class OnetepParserContext(object):
             backend.addValue('geometry_optimization_converged', self.geoConvergence)        
             backend.closeSection('section_frame_sequence',gIndex)
         
+        TSSuperContext = OnetepTSParser.OnetepTSParserContext(False)
+        TSParser = AncillaryParser(
+            fileDescription = OnetepTSParser.build_OnetepTSFileSimpleMatcher(),
+            parser = self.parser,
+            cachingLevelForMetaName = OnetepTSParser.get_cachingLevelForMetaName(self.metaInfoEnv, CachingLevel.Ignore),
+            superContext = TSSuperContext)
+
+        extFile = ".ts"       # Find the file with extension .cell
+        dirName = os.path.dirname(os.path.abspath(self.fName))
+        cFile = str()
+        for file in os.listdir(dirName):
+            if file.endswith(extFile):
+                cFile = file
+            fName = os.path.normpath(os.path.join(dirName, cFile))
+            if file.endswith(".ts"):
+                with open(fName) as fIn:
+                    TSParser.parseFile(fIn)          
+
+                    self.ts_total_energy = TSSuperContext.total_energy    
+                    self.ts_cell_vector = TSSuperContext.frame_cell
+                    self.ts_forces = TSSuperContext.total_forces
+                    self.ts_position = TSSuperContext.total_positions
+                   
+                    self.ts_path = TSSuperContext.path_ts
+                    if TSSuperContext.total_energy_final:
+                        self.ts_total_energy_f = TSSuperContext.total_energy_final
+                    
+                        self.ts_forces_f = TSSuperContext.md_forces_final
+                        self.ts_cell_vector_f = TSSuperContext.cell_final
+                        self.ts_positions_f = TSSuperContext.atomf_position
+                        self.ts_path_f =TSSuperContext.path_final
+                    
+                    self.ts_total_energy_p = TSSuperContext.total_energy_pro
+                    self.ts_forces_p = TSSuperContext.md_forces_pro
+                    self.ts_cell_vector_p = TSSuperContext.cell_pro
+                    self.ts_positions_p = TSSuperContext.atomp_position
+                    self.ts_path_p =TSSuperContext.path_pro
+                    for i in range(len(self.ts_total_energy)):
+                        backend.openSection('x_onetep_section_ts')
+                        backend.addValue('x_onetep_ts_path', self.ts_path[i]) 
+                        backend.addValue('x_onetep_ts_energy_total', self.ts_total_energy[i])
+                        backend.addArrayValues('x_onetep_ts_cell_vectors', np.asarray(self.ts_cell_vector[i]))
+                        backend.addArrayValues('x_onetep_ts_forces', np.asarray(self.ts_forces[i]))
+                        backend.addArrayValues('x_onetep_ts_positions', np.asarray(self.ts_position[i]))
+                                               
+                        backend.closeSection('x_onetep_section_ts',i)        
+
+                    if TSSuperContext.total_energy_final:    
+                        backend.openSection('x_onetep_section_ts_final')
+                        backend.addValue('x_onetep_ts_energy_final', self.ts_total_energy_f)
+                        backend.addArrayValues('x_onetep_ts_cell_vectors_final', np.asarray(self.ts_cell_vector_f))
+                        backend.addArrayValues('x_onetep_ts_positions_final', np.asarray(self.ts_positions_f))
+                        backend.addArrayValues('x_onetep_ts_forces_final', np.asarray(self.ts_forces_f))
+                        backend.addValue('x_onetep_ts_path_ts_final', self.ts_path_f)    
+                        backend.closeSection('x_onetep_section_ts_final',gIndex)    
+                    
+                    backend.openSection('x_onetep_section_ts_product')
+                    backend.addValue('x_onetep_ts_energy_product', self.ts_total_energy_p)
+                    backend.addArrayValues('x_onetep_ts_cell_vectors_product', np.asarray(self.ts_cell_vector_p))
+                    backend.addArrayValues('x_onetep_ts_positions_product', np.asarray(self.ts_positions_p))
+                    backend.addArrayValues('x_onetep_ts_forces_product', np.asarray(self.ts_forces_p))
+                    backend.addValue('x_onetep_ts_path_product', self.ts_path_p)    
+                    backend.closeSection('x_onetep_section_ts_product',gIndex)
 
         # MDSuperContext = OnetepMDParser.OnetepMDParserContext(False)
         # MDParser = AncillaryParser(
@@ -1433,6 +1496,26 @@ def build_onetepMainFileSimpleMatcher():
             SM(r"dispersion\:\s*(?P<x_onetep_disp_method_name_store>[0-9.]+)"),
             ])
     
+    TSParameterSubMatcher = SM(name = 'TS_parameters' ,            
+        sections = ["x_onetep_section_ts_parameters"],
+        subFlags = SM.SubFlags.Unordered,
+        forwardMatch = True,
+        startReStr = r"tssearch\_",
+        subMatchers = [
+            SM(r"tssearch\_cg\_max\_iter\s*(?P<x_onetep_ts_number_cg>[0-9]+)"),
+            SM(r"tssearch\_method\s*\:\s*(?P<x_onetep_ts_method>[A-Za-z]+)"),
+            SM(r"tssearch\_method\s*(?P<x_onetep_ts_method>[A-Za-z]+)"),
+            SM(r"tssearch\_lstqst\_protocol\s*(?P<x_onetep_ts_protocol>[A-Za-z]+)"),
+            SM(r"tssearch\_lstqst\_protocol\s*\:\s*(?P<x_onetep_ts_protocol>[A-Za-z]+)"),
+            SM(r"tssearch\_qst\_max\_iter\s*\:\s*(?P<x_onetep_ts_qst_iter>[0-9.]+)"),
+            SM(r"tssearch\_qst\_max\_iter\s*(?P<x_onetep_ts_qst_iter>[0-9.]+)"),
+            SM(r"tssearch\_cg\_max\_iter\s*\:\s*(?P<x_onetep_ts_number_cg>[0-9.]+)"),
+            SM(r"tssearch\_force\_tol\s*\:\s*(?P<x_onetep_ts_force_tolerance>[-+0-9.eEd]+)"),
+            SM(r"tssearch\_force\_tol\s*(?P<x_onetep_ts_force_tolerance>[-+0-9.eEd]+)"),
+            SM(r"tssearch\_disp\_tol\s*\:\s*(?P<x_onetep_ts_displacement_tolerance>[-+0-9.eEd]+)"),
+            SM(r"tssearch\_disp\_tol\s*(?P<x_onetep_ts_displacement_tolerance>[-+0-9.eEd]+)"),
+            ])   
+    
     MDParameterSubMatcher = SM(name = 'MD_parameters' ,            
         sections = ["section_sampling_method"],
         forwardMatch = True,
@@ -1445,7 +1528,7 @@ def build_onetepMainFileSimpleMatcher():
             SM(r"md\_num\_iter\s*(?P<x_onetep_number_of_steps_requested>[0-9]+)"),
 
             ])
-    
+ 
     # OpticsParameterSubMatcher = SM(name = 'optics_parameters' ,            
     #     sections = ["x_onetep_section_optics_parameters"],
     #     startReStr = r"\s\*\*\** Optics Parameters \*\*\**\s*",
@@ -1668,7 +1751,14 @@ def build_onetepMainFileSimpleMatcher():
                     SM(r"\<QC\>\s*\[NGWF iterations]\:\s*(?P<x_onetep_n_ngwf_iterations>[0-9]*)\s*"),
                     SM(r"\<QC\>\s*\[total\_energy\]\:\s*(?P<energy_total__hartree>[-+0-9.eEdD]*)\s*"), # matching final converged total energy
                     SM(r"\<QC\>\s*\[rms\_gradient\]\:\s*(?P<x_onetep_final_rms_gradient__hartree>[-+0-9.eEdD]*)\s*"),
-                        
+                    SM(r"\sPath coordinate\:\s*(?P<x_onetep_ts_coordinate_path>[-+0-9.eEdD]*)\s*"), 
+                    SM(r"\sEnergy of reactant\:\s*(?P<x_onetep_energy_reac__hartree>[-+0-9.eEdD]*)\s*"),
+                    SM(r"\sEnergy of product\:\s*(?P<x_onetep_energy_prod__hartree>[-+0-9.eEdD]*)\s*"),
+                    SM(r"\sEnergy of LST maximum\:\s*(?P<x_onetep_energy_lst_max__hartree>[-+0-9.eEdD]*)\s*"),
+                    SM(r"\sLocation of LST maximum\:\s*(?P<x_onetep_location_lst_max__hartree>[-+0-9.eEdD]*)\s*"),
+                    SM(r"\sBarrier from reactant\:\s*(?P<x_onetep_barrier_reac__hartree>[-+0-9.eEdD]*)\s*"),
+                    SM(r"\sBarrier from product\:\s*(?P<x_onetep_barrier_prod__hartree>[-+0-9.eEdD]*)\s*"),
+                    SM(r"\sEnergy of reaction\:\s*(?P<x_onetep_reaction_energy__hartree>[-+0-9.eEdD]*)\s*"),
                     SM(startReStr = r"\*\*\*\*\**\sIon\-Ion forces\s*\*\*\*\*\**\s*",
                          endReStr = r"TOTAL\:\s*",
                          subMatchers = [
@@ -1708,6 +1798,12 @@ def build_onetepMainFileSimpleMatcher():
                          subMatchers = [
                                     
                                     SM(r"\*\s*[A-Za-z]+\s*[0-9]+\s*(?P<x_onetep_store_atom_forces>[-\d\.]+\s+[-\d\.]+\s+[-\d\.]+)\s\*",
+                                        repeats = True)
+                         ]), 
+                    SM(startReStr = r"\s*Forces\: Cartesian components\: Ha\/Bohr\s*",
+                         subMatchers = [
+                                    
+                                    SM(r"\s*\+\s*[A-Za-z]+\s*[0-9]+\s*(?P<x_onetep_store_atom_forces>[-\d\.]+\s+[-\d\.]+\s+[-\d\.]+)\s*\+",
                                         repeats = True)
                          ]), 
                     geomOptimSubMatcher,
@@ -1760,7 +1856,7 @@ def build_onetepMainFileSimpleMatcher():
                          subMatchers = [
                             SM(r"\s*x\s*time\s*\:\s*(?P<x_onetep_frame_time>[+0-9.eEdD]+)\s*ps\s*x\s*"),
                          ]),
-                   
+             
 
                     ])
     ########################################
@@ -1885,6 +1981,7 @@ def build_onetepMainFileSimpleMatcher():
 
                                   ]), # CLOSING SM ProgramHeader
                 
+                TSParameterSubMatcher,
                 LRTDDFT_parametersSubMatcher,
                 NGWFSubMatcher,
                 VanderWaalsParameterSubMatcher,                
@@ -1910,27 +2007,7 @@ def build_onetepMainFileSimpleMatcher():
                 ElectronicParameterSubMatcher,
                 LRTDDFTSubMatcher,
                 
-                # ElectronicMinimisParameterSubMatcher,
-
-                # DensityMixingParameterSubMatcher,
-
-                # PopulationAnalysisParameterSubMatcher,
-
-                # MDParameterSubMatcher,
                 
-                # GeomOptimParameterSubMatcher,
-                
-                # phononCalculationSubMatcher,
-                
-                # TSParameterSubMatcher,
-                
-                # OpticsParameterSubMatcher,
-
-                # ElecSpecParameterSubMatcher,
-                
-                # TDDFTParameterSubMatcher,
-
-                # systemDescriptionSubMatcher, # section_system subMatcher
         
           # ############ onetep-specific van der Waals method parameters #############################     
                 
@@ -1958,6 +2035,7 @@ def build_onetepMainFileSimpleMatcher():
                 energycomponentsSubMatcher,
                 singlepointSubMatcher,
                 
+
 
                 # SM(name = "Vibrational_frequencies",
                 #     sections = ["x_onetep_section_vibrational_frequencies"],
