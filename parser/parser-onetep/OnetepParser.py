@@ -425,10 +425,12 @@ class OnetepParserContext(object):
 
 # Processing forces acting on atoms (final converged forces)
     def onClose_section_single_configuration_calculation(self, backend, gIndex, section):
+        # self.energy_total_scf_iteration_list = []
+        # backend.addValue('x_onetep_ts_index', gIndex)
         self.time_0 = section['x_onetep_frame_time_0'] 
         
         self.initial_scf_iter_time = section['x_onetep_initial_scf_iteration_wall_time']
-        
+        hrbohr_to_N = float(8.238723e-8)
         hrang_to_N = float(4.359745e-8)
         f_st = section['x_onetep_store_atom_forces']
         f_ion = section['x_onetep_store_atom_ionforces']
@@ -443,7 +445,10 @@ class OnetepParserContext(object):
                 f_st[i] = [float(j) for j in f_st[i]]
                 
                 f_st_int = f_st[i] 
-                f_st_int = [x * hrang_to_N for x in f_st_int]
+                if backend.addValue('x_onetep_ts_index', gIndex):
+                    f_st_int = [x * hrbohr_to_N for x in f_st_int]
+                else:
+                    f_st_int = [x * hrang_to_N for x in f_st_int]
      
                 self.atom_forces.append(f_st_int)
                     
@@ -569,12 +574,18 @@ class OnetepParserContext(object):
                 cFile = file
         fName = os.path.normpath(os.path.join(dirName, cFile))
 
+        self.numb_iter = section['x_onetep_number_of_scf_iterations_store']
+        print (self.numb_iter,'ciao')
          # parsing *.cell file to get the k path segments
         if file.endswith(extFile):   
             pass
         else:    
-            backend.addValue('number_of_scf_iterations', len(self.energy_total_scf_iteration_list))
+            if self.numb_iter:
+                backend.addValue('number_of_scf_iterations', self.numb_iter[-1])
+            else:
+                backend.addValue('number_of_scf_iterations', len(self.energy_total_scf_iteration_list))
             # backend.addArrayValues('stress_tensor',np.asarray(self.stress_tensor_value))
+        
         
         Hr_J_converter = float(4.35974e-18)
         
@@ -594,15 +605,21 @@ class OnetepParserContext(object):
             backend.addValue('x_onetep_dispersion_correction',self.DispersionCorrection[0]*Hr_J_converter)
         if self.Integrateddensity:
             backend.addValue('x_onetep_integrated_density',self.Integrateddensity[0])
-    
+        
+
+
+
     def onClose_section_scf_iteration(self, backend, gIndex, section):
         """trigger called when _section_scf_iteration is closed"""
         # get cached values for energy_total_scf_iteration
+        
         ev = section['energy_total_scf_iteration']
+        
         if ev:
+            
             self.scfIterNr = len(ev)
             self.energy_total_scf_iteration_list.append(ev)
-   
+       
 
 
     def onClose_x_onetep_section_SCF_iteration_frame(self, backend, gIndex, section):
@@ -1576,8 +1593,10 @@ def build_onetepMainFileSimpleMatcher():
 
     energycomponentsSubMatcher = SM(name= 'energy_components',
                                     startReStr = r"\s*\-\-\-\-\-\-\-\-\-\-* ENERGY COMPONENTS \(Eh\) \-\-\-\-\-\-\-\-\-\-\-*",
+                                    weak = True,
+                                    forwardMatch = True,
                                     sections = ['x_onetep_section_energy_components'],
-                                    endReStr = r"\s*Integrated density\s*\:\s*[+0-9.eEdD]+",
+                                    # endReStr = r"\s*Integrated density\s*\:\s*[+0-9.eEdD]+",
                                     
 
                 subMatchers = [                     
@@ -1660,6 +1679,40 @@ def build_onetepMainFileSimpleMatcher():
                     SM(r"\s*Integrated density\s*\:\s*(?P<x_onetep_integrated_density_store>[-+0-9.eEdD]*)\s*"), 
 
                     ])
+    KernelOptimSubMatcher_ts = SM(name= 'kernel optimisation',
+                                    startReStr = r"\>\>\> Density kernel optimised for the current NGWF basis\:",
+                                    sections = ['x_onetep_section_kernel_optimisation'],
+                                    
+                                    repeats = True,
+
+                subMatchers = [                     
+                    SM(r"\s*Total free energy\s*\=\s*(?P<x_onetep_total_free_energy>[-+0-9.eEdD]*)\s*"),
+                    SM(r"\s*Total energy\s*\=\s*(?P<x_onetep_total_energy>[-+0-9.eEdD]*)\s*"), # matching final converged total energy
+                    SM(r"\s*Estimated bandgap\s*\=\s*(?P<x_onetep_band_gap>[-+0-9.eEdD]*)\s*"),
+                    SM(r"\s*RMS occupancy error\s*\=\s*(?P<x_onetep_rms_occupancy_error>[-+0-9.eEdD]*)\s*"),
+                    SM(r"\s*\[H\,K\] commutator\s*\=\s*(?P<x_onetep_commutator>[-+0-9.eEdD]*)\s*"),
+                    ])
+
+    
+    energycomponentsSubMatcher_ts = SM(name= 'energy_components',
+                                    startReStr = r"\s*\-\-\-\-\-\-\-\-\-\-* ENERGY COMPONENTS \(Eh\) \-\-\-\-\-\-\-\-\-\-\-*",
+                                    forwardMatch = True,
+                                    # endReStr = r"\sBFGS\:\sfinished iteration\s*\0\s*",
+                                    sections = ['x_onetep_section_energy_components'],
+                                    
+
+                subMatchers = [                     
+                    
+                    SM(r"\s*\| Kinetic\s*\:\s*(?P<x_onetep_electronic_kinetic_energy>[-+0-9.eEdD]*)\s\|\s*"), # matching final converged total energy
+                    SM(r"\s*\| Pseudopotential \(local\)\s*\:\s*(?P<x_onetep_pseudo_local_store>[-+0-9.eEdD]*)\s\|\s*"), 
+                    SM(r"\s*\| Pseudopotential \(non\-local\)\s*\:\s*(?P<x_onetep_pseudo_non_local_store>[-+0-9.eEdD]*)\s\|\s*"), 
+                    SM(r"\s*\| Hartree\s*\:\s*(?P<x_onetep_energy_correction_hartree_store>[-+0-9.eEdD]*)\s\|\s*"), 
+                    SM(r"\s*\| Exchange\-correlation\s*\:\s*(?P<x_onetep_energy_XC_store>[-+0-9.eEdD]*)\s\|\s*"), 
+                    SM(r"\s*\| Ewald\s*\:\s*(?P<x_onetep_ewald_correction_store>[-+0-9.eEdD]*)\s\|\s*"), 
+                    SM(r"\s*\| Dispersion Correction\s*\:\s*(?P<x_onetep_dispersion_correction_store>[-+0-9.eEdD]*)\s\|\s*"), 
+                    SM(r"\s*Integrated density\s*\:\s*(?P<x_onetep_integrated_density_store>[-+0-9.eEdD]*)\s*"), 
+
+                    ])
     
     geomOptim_finalSubMatcher = SM (name = 'geometry_optimisation_final_configuration',
             startReStr = r"\sBFGS\s\:\sFinal Configuration\:\s*",
@@ -1690,7 +1743,7 @@ def build_onetepMainFileSimpleMatcher():
                         
                         energycomponentsSubMatcher_frame,
                         SM(sections = ['section_scf_iteration'],
-                            startReStr = r"\s*[0-9]+\s*(?P<x_onetep_scf_rms_gradient>[+0-9.eEdD]+)\s*(?P<energy_total_scf_iteration__hartree>[-+0-9.eEdD]*)\s*(?P<energy_change_scf_iteration__hartree>[-+0-9.eEdD]*)\s*[-+0-9.eEdD]*\s*",repeats = True,
+                            startReStr = r"\s*(?P<x_onetep_number_of_scf_iterations_store>[0-9]+)\s*(?P<x_onetep_scf_rms_gradient>[+0-9.eEdD]+)\s*(?P<energy_total_scf_iteration__hartree>[-+0-9.eEdD]*)\s*(?P<energy_change_scf_iteration__hartree>[-+0-9.eEdD]*)\s*[-+0-9.eEdD]*\s*",repeats = True,
                             endReStr = r"\s*[0-9]+\s*[+0-9.eEdD]+\s*[-+0-9.eEdD]*\s*\<\-\-\sCG\s*"),  
                         
                         SM(r"\<QC\>\s*\[NGWF iterations]\:\s*(?P<x_onetep_n_ngwf_iterations>[0-9]*)\s*"),
@@ -1713,11 +1766,61 @@ def build_onetepMainFileSimpleMatcher():
                         # geomOptim_finalSubMatcher,
                         ])
     
+    TSSubMatcher = SM(name = 'TS submatcher',
+                    startReStr = r"\<\<\<\<\<* Starting ONETEP Transition State Search \>\>\>\>\>*",              
+                    required = True,
+                    subMatchers = [ 
+
+                        SM(startReStr = r"Calculating Ewald energy\s\.\.\.\s*(?P<x_onetep_ewald_correction__hartree>[-+0-9.eEdD]+)\sHartree",
+                            repeats = True,
+                            endReStr = r"Determining parallel strategy\s.\.\.\.\.\.\sdone",
+                            sections = ["section_single_configuration_calculation","section_system"],
+                            subMatchers = [ 
+                    
+                                    KernelOptimSubMatcher_ts,
+                                    energycomponentsSubMatcher_ts,
+                                    SM(sections = ['section_scf_iteration'],
+                                        startReStr = r"\s*(?P<x_onetep_number_of_scf_iterations_store>[0-9]+)\s*(?P<x_onetep_scf_rms_gradient__hartree>[+0-9.eEdD]+)\s*(?P<energy_total_scf_iteration__hartree>[-+0-9.eEdD]*)\s*\<\-\-\sCG\s*"),
+                                        # endReStr = r"\s*[0-9]+\s*(?P<x_onetep_scf_rms_gradient>[+0-9.eEdD]+)\s*(?P<energy_total_scf_iteration>[-+0-9.eEdD]*)\s*\<\-\-\sCG\s*",
+                                        # endReStr = r"\s*[0-9]+\s*[+0-9.eEdD]+\s*[-+0-9.eEdD]*\s*\<\-\-\sCG\s*",
+                                        # subMatchers = [   
+                                        #     SM(r"\s*[0-9]+\s*(?P<x_onetep_scf_rms_gradient>[+0-9.eEdD]+)\s*(?P<energy_total_scf_iteration>[-+0-9.eEdD]*)\s*\<\-\-\sCG\s*",
+                                        #     repeats = True)]),
+                                          
+                                    SM(sections = ['section_scf_iteration'],
+                                        startReStr = r"\s*(?P<x_onetep_number_of_scf_iterations_store>[0-9]+)\s*(?P<x_onetep_scf_rms_gradient__hartree>[+0-9.eEdD]+)\s*(?P<energy_total_scf_iteration__hartree>[-+0-9.eEdD]*)\s*(?P<energy_change_scf_iteration__hartree>[-+0-9.eEdD]*)\s*[-+0-9.eEdD]*\s*",repeats = True,
+                                        # endReStr = r"\s*[0-9]+\s*(?P<x_onetep_scf_rms_gradient>[+0-9.eEdD]+)\s*(?P<energy_total_scf_iteration>[-+0-9.eEdD]*)\s*\<\-\-\sCG\s*",
+                                        endReStr = r"\s*[0-9]+\s*[+0-9.eEdD]+\s*[-+0-9.eEdD]*\s*\<\-\-\sCG\s*",
+                                        # subMatchers = [   
+                                        #     SM(r"\s*[0-9]+\s*(?P<x_onetep_scf_rms_gradient>[+0-9.eEdD]+)\s*(?P<energy_total_scf_iteration>[-+0-9.eEdD]*)\s*\<\-\-\sCG\s*",
+                                        #     repeats = True)]),
+                                          ),  
+                                   
+                                    SM(r"\sPath coordinate\:\s*(?P<x_onetep_ts_coordinate_path>[-+0-9.eEdD]*)\s*"), 
+                                    SM(r"\sEnergy\:\s*(?P<x_onetep_energy_lst_max__hartree>[-+0-9.eEdD]*)"),
+                                    SM(r"\sEnergy of reactant\:\s*(?P<x_onetep_energy_reac__hartree>[-+0-9.eEdD]*)\s*"),
+                                    SM(r"\sEnergy of product\:\s*(?P<x_onetep_energy_prod__hartree>[-+0-9.eEdD]*)\s*"),
+                                    SM(r"\sEnergy of LST maximum\:\s*(?P<x_onetep_energy_lst_max__hartree>[-+0-9.eEdD]*)\s*"),
+                                    SM(r"\sLocation of LST maximum\:\s*(?P<x_onetep_location_lst_max__hartree>[-+0-9.eEdD]*)\s*"),
+                                    SM(r"\sBarrier from reactant\:\s*(?P<x_onetep_barrier_reac__hartree>[-+0-9.eEdD]*)\s*"),
+                                    SM(r"\sBarrier from product\:\s*(?P<x_onetep_barrier_prod__hartree>[-+0-9.eEdD]*)\s*"),
+                                    SM(r"\sEnergy of reaction\:\s*(?P<x_onetep_reaction_energy__hartree>[-+0-9.eEdD]*)\s*"),
+                                
+
+                                    SM(startReStr = r"\s*Forces\: Cartesian components\: Ha\/Bohr\s*",
+                                         subMatchers = [
+                                                    
+                                                    SM(r"\s*\+\s*[A-Za-z]+\s*[0-9]+\s*(?P<x_onetep_store_atom_forces>[-\d\.]+\s+[-\d\.]+\s+[-\d\.]+)\s*\+",
+                                                        repeats = True)
+                                                ]), 
+                            ]),
+        ])     
+    
     singlepointSubMatcher = SM(name = 'single_point',
                 # startReStr = r"\s*\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\- ENERGY COMPONENTS \(Eh\) \-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-" or              
                 startReStr = r"\s*\<\<\<\<\< CALCULATION SUMMARY \>\>\>\>\>\s*",
                 # startReStr = r"\>\>\> Density kernel optimised for the current NGWF basis\:",
-                
+                weak = True,
                 # startReStr = r"\s*\<* CALCULATION SUMMARY \>*\s*", 
                 endReStr = r"\sStarting BFGS iteration\s1\s\.\.\.",
                 sections = ["section_single_configuration_calculation","section_system"],
@@ -1950,12 +2053,10 @@ def build_onetepMainFileSimpleMatcher():
     return SM (name = 'Root',
         startReStr = "",
         forwardMatch = True,
-        # subFlags = SM.SubFlags.Unordered,
         weak = True,
         subMatchers = [
         SM (name = 'NewRun',
             startReStr = r"\s\|\s*Linear-Scaling Ab Initio Total Energy Program\s*\|\s*",
-            subFlags = SM.SubFlags.Unordered,
             required = True,
             forwardMatch = True,
             sections = ['section_run'],
@@ -1974,96 +2075,45 @@ def build_onetepMainFileSimpleMatcher():
 
                                   ]), # CLOSING SM ProgramHeader
                 
-                TSParameterSubMatcher,
-                LRTDDFT_parametersSubMatcher,
-                NGWFSubMatcher,
-                VanderWaalsParameterSubMatcher,                
-                edftCalculationSubMatcher, 
-                ElectronicMinimisParameterSubMatcher,
-                GeomOptimParameterSubMatcher, 
-                calculationMethodSubMatcher,
-                basisSetCellAssociatedSubMatcher,
-      
-                SM(name = 'Atom_topology',
-                  startReStr = r"\%block\s*species\s*",              
-                  
-                  # endReStr = r"\%endblock species\s*",  
-                  #forwardMatch = True,
-                  sections = ['section_topology'],
+                SM(name = 'input',
+                  startReStr = r"\-\-\-\-\-* INPUT FILE \-\-\-\-\-*",
+                  subFlags = SM.SubFlags.Unordered,                  
+                  endReStr = r"\-\-\-\-\-* END INPUT FILE \-\-\-\-\-*",
                   subMatchers = [
-                 
-                      SM(r"[0-9a-zA-Z]+\s*(?P<x_onetep_store_atom_name>[a-zA-Z]+)\s*(?P<x_onetep_store_atom_mass>[0-9.]+)\s*(?P<x_onetep_n_ngwf_atom_store>[0-9.]+)\s*(?P<x_onetep_ngwf_radius_store>[\d\.]+)\s*",
-                        #endReStr = "\n",   
-                        repeats = True),
-                     ]), # CLOSI
+
+                        TSParameterSubMatcher,
+                        LRTDDFT_parametersSubMatcher,
+                        NGWFSubMatcher,
+                        VanderWaalsParameterSubMatcher,                
+                        edftCalculationSubMatcher, 
+                        ElectronicMinimisParameterSubMatcher,
+                        GeomOptimParameterSubMatcher, 
+                        calculationMethodSubMatcher,
+                        basisSetCellAssociatedSubMatcher,
+              
+                        SM(name = 'Atom_topology',
+                          startReStr = r"\%block\s*species\s*",              
+                          
+                          # endReStr = r"\%endblock species\s*",  
+                          #forwardMatch = True,
+                          sections = ['section_topology'],
+                          subMatchers = [
+                         
+                              SM(r"[0-9a-zA-Z]+\s*(?P<x_onetep_store_atom_name>[a-zA-Z]+)\s*(?P<x_onetep_store_atom_mass>[0-9.]+)\s*(?P<x_onetep_n_ngwf_atom_store>[0-9.]+)\s*(?P<x_onetep_ngwf_radius_store>[\d\.]+)\s*",
+                                #endReStr = "\n",   
+                                repeats = True),
+                             ]) # CLOSI
+                        
+                        ]),
+                
                 
                 ElectronicParameterSubMatcher,
                 LRTDDFTSubMatcher,
-                
-                
-        
-          # ############ onetep-specific van der Waals method parameters #############################     
-                
-          #       SM(name = "van der Waals onetep TS",
-          #          startReStr = r"\s*Dispersion\-correction scheme\s\:\s+",
-          #          forwardMatch = True,
-          #          sections = ["x_onetep_section_van_der_Waals_parameters"],
-          #          subMatchers = [
-          #               ######## Method TS #######
-          #               SM(r"\s*Parameter sR\s*\: *(?P<x_onetep_Parameter_sR> [0-9.]+)"),
-          #               SM(r"\s*Parameter d\s*\: *(?P<x_onetep_Parameter_d> [0-9.]+)"),
-          #               ######## Method OBS #######
-          #               SM(r"\s*Parameter lambda\s*\: *(?P<x_onetep_Parameter_LAMBDA> [0-9.]+)"),
-          #               SM(r"\s*Parameter n\s*\: *(?P<x_onetep_Parameter_n> [0-9.]+)"),
-               
-          #               ######## Method G06 #######
-          #               SM(r"\s*Parameter s6\s*\: *(?P<x_onetep_Parameter_s6> [0-9.]+)"),
-          #               SM(r"\s*Parameter d\s*\: *(?P<x_onetep_Parameter_d> [0-9.]+)")
-          #                     ]), # CLOSING van der waals onetep parameters
-              
-          #       #geomOptimSubMatcher_init,
-                
                 edft_SubMatcher,
+                TSSubMatcher,    
                 KernelOptimSubMatcher,
                 energycomponentsSubMatcher,
                 singlepointSubMatcher,
-                
-
-
-                # SM(name = "Vibrational_frequencies",
-                #     sections = ["x_onetep_section_vibrational_frequencies"],
-                #     startReStr = r"\s\+\s*q\-pt\=\s*[0-9.]+",
-                #     #startReStr = r"\s\+\s*Vibrational Frequencies\s*\+\s*",
-                #     repeats = True,
-                #     subMatchers = [
-                #         SM(r"\s\+\s*(?P<x_onetep_n_iterations_phonons>[0-9.]+)\s*(?P<x_onetep_vibrationl_frequencies_store>[-\d\.]+)\s*(?P<x_onetep_ir_store>[a-z])\s*(?P<x_onetep_ir_intensity_store>[-\d\.]+)\s*[A-Z]\s*(?P<x_onetep_raman_activity_store>[-\d\.]+)\s*[A-Z]\s*\+\s*",       
-                #             repeats = True,
-                #             endReStr = r"\s\+\s\.*\s\+\s*",
-                #              ),
-                #         SM(r"\s\+\s*(?P<x_onetep_n_iterations_phonons>[0-9.]+)\s*(?P<x_onetep_vibrationl_frequencies_store>[-\d\.]+)\s*(?P<x_onetep_ir_store>[a-z])\s*(?P<x_onetep_ir_intensity_store>[-\d\.]+)\s*[A-Z]\s*[A-Z]\s*\+\s*",       
-                #             repeats = True,
-                #             endReStr = r"\s\+\s\.*\s\+\s*",
-                #              ),
-                #         SM(r"\s\+\s*(?P<x_onetep_n_iterations_phonons>[0-9.]+)\s*(?P<x_onetep_vibrationl_frequencies_store>[-\d\.]+)\s*(?P<x_onetep_ir_store>[a-z])\s*\+\s*",          
-                #             repeats = True,
-                #             endReStr = r"\s\+\s\.*\s\+\s*",
-                #             ),
-                #           ]),
-                
-                # bandStructureSubMatcher,  # band structure subMatcher
-                                       
-                # SM(name = 'ramantensor',
-                #         #startReStr = r"\s\*\*\*\*\*\*\*\*\*\*\** Stress Tensor \*\*\*\*\*\*\*\*\*\*\**\s*",
-                #         startReStr = r"\s\+\sMode number\:\s*[0-9.]+\sRaman\stensor\s*Depolarisation Ratio\s*\+\s*",
-                #         endReStr = r"\s\+\s*\+\s*",
-                #         repeats = True,
-                #         sections = ['x_onetep_section_raman_tensor'],
-                #         subMatchers = [
-                #            SM(r"\s\+\s*(?P<x_onetep_store_raman_tensor>[-\d\.]+\s+[-\d\.]+\s+[-\d\.]+)",
-                #               repeats = True),  
-                #                       ]), # CLOSIN
-
-
                       
                 Dipole_moments,
                 Mulliken_SubMatcher,
@@ -2082,8 +2132,8 @@ def build_onetepMainFileSimpleMatcher():
                                       ]), # CLOSING section_onetep_time
                                         
                   
-                
-                         ])       
+                ])
+                               
                 
  
         ]) # CLOSING SM NewRun 
@@ -2123,6 +2173,7 @@ def get_cachingLevelForMetaName(metaInfoEnv):
                                 'x_onetep_basis_set_planewave_cutoff' : CachingLevel.Cache,
                                 # 'eigenvalues_values': CachingLevel.Cache,
                                 # 'eigenvalues_kpoints':CachingLevel.Cache,
+                                'x_onetep_number_of_scf_iterations_store':CachingLevel.Cache,
                                 'x_onetep_tddft_excit_lifetime_store':CachingLevel.Cache,
                                 "x_onetep_disp_method_name_store":CachingLevel.Cache,
                                 'x_onetep_total_energy_corrected_for_finite_basis_store': CachingLevel.Cache,
