@@ -575,15 +575,15 @@ class OnetepParserContext(object):
         fName = os.path.normpath(os.path.join(dirName, cFile))
 
         self.numb_iter = section['x_onetep_number_of_scf_iterations_store']
-        print (self.numb_iter,'ciao')
+        
          # parsing *.cell file to get the k path segments
-        if file.endswith(extFile):   
-            pass
-        else:    
-            if self.numb_iter:
-                backend.addValue('number_of_scf_iterations', self.numb_iter[-1])
-            else:
-                backend.addValue('number_of_scf_iterations', len(self.energy_total_scf_iteration_list))
+        # if file.endswith(extFile):   
+        #     pass
+        # else:    
+        #     if self.numb_iter:
+        #         backend.addValue('number_of_scf_iterations', self.numb_iter[-1])
+        #     else:
+        #         backend.addValue('number_of_scf_iterations', len(self.energy_total_scf_iteration_list))
             # backend.addArrayValues('stress_tensor',np.asarray(self.stress_tensor_value))
         
         
