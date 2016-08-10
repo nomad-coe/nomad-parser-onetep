@@ -1680,10 +1680,9 @@ def build_onetepMainFileSimpleMatcher():
 
                     ])
     KernelOptimSubMatcher_ts = SM(name= 'kernel optimisation',
-                                    startReStr = r"\>\>\> Density kernel optimised for the current NGWF basis\:",
-                                    sections = ['x_onetep_section_kernel_optimisation'],
-                                    
-                                    repeats = True,
+                                startReStr = r"\>\>\> Density kernel optimised for the current NGWF basis\:",
+                                sections = ['x_onetep_section_kernel_optimisation'],
+                                # repeats = True,
 
                 subMatchers = [                     
                     SM(r"\s*Total free energy\s*\=\s*(?P<x_onetep_total_free_energy>[-+0-9.eEdD]*)\s*"),
@@ -1777,7 +1776,7 @@ def build_onetepMainFileSimpleMatcher():
                             sections = ["section_single_configuration_calculation","section_system"],
                             subMatchers = [ 
                     
-                                    # KernelOptimSubMatcher_ts,
+                                    KernelOptimSubMatcher_ts,
                                     energycomponentsSubMatcher_ts,
                                     SM(sections = ['section_scf_iteration'],
                                         startReStr = r"\s*(?P<x_onetep_number_of_scf_iterations_store>[0-9]+)\s*(?P<x_onetep_scf_rms_gradient__hartree>[+0-9.eEdD]+)\s*(?P<energy_total_scf_iteration__hartree>[-+0-9.eEdD]*)\s*\<\-\-\sCG\s*"),
