@@ -1696,7 +1696,7 @@ def build_onetepMainFileSimpleMatcher():
     
     energycomponentsSubMatcher_ts = SM(name= 'energy_components',
                                     startReStr = r"\s*\-\-\-\-\-\-\-\-\-\-* ENERGY COMPONENTS \(Eh\) \-\-\-\-\-\-\-\-\-\-\-*",
-                                    forwardMatch = True,
+                                    # forwardMatch = True,
                                     # endReStr = r"\sBFGS\:\sfinished iteration\s*\0\s*",
                                     sections = ['x_onetep_section_energy_components'],
                                     
@@ -1778,7 +1778,7 @@ def build_onetepMainFileSimpleMatcher():
                             subMatchers = [ 
                     
                                     # KernelOptimSubMatcher_ts,
-                                    # energycomponentsSubMatcher_ts,
+                                    energycomponentsSubMatcher_ts,
                                     SM(sections = ['section_scf_iteration'],
                                         startReStr = r"\s*(?P<x_onetep_number_of_scf_iterations_store>[0-9]+)\s*(?P<x_onetep_scf_rms_gradient__hartree>[+0-9.eEdD]+)\s*(?P<energy_total_scf_iteration__hartree>[-+0-9.eEdD]*)\s*\<\-\-\sCG\s*"),
                                         # endReStr = r"\s*[0-9]+\s*(?P<x_onetep_scf_rms_gradient>[+0-9.eEdD]+)\s*(?P<energy_total_scf_iteration>[-+0-9.eEdD]*)\s*\<\-\-\sCG\s*",
