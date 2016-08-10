@@ -1777,8 +1777,8 @@ def build_onetepMainFileSimpleMatcher():
                             sections = ["section_single_configuration_calculation","section_system"],
                             subMatchers = [ 
                     
-                                    KernelOptimSubMatcher_ts,
-                                    energycomponentsSubMatcher_ts,
+                                    # KernelOptimSubMatcher_ts,
+                                    # energycomponentsSubMatcher_ts,
                                     SM(sections = ['section_scf_iteration'],
                                         startReStr = r"\s*(?P<x_onetep_number_of_scf_iterations_store>[0-9]+)\s*(?P<x_onetep_scf_rms_gradient__hartree>[+0-9.eEdD]+)\s*(?P<energy_total_scf_iteration__hartree>[-+0-9.eEdD]*)\s*\<\-\-\sCG\s*"),
                                         # endReStr = r"\s*[0-9]+\s*(?P<x_onetep_scf_rms_gradient>[+0-9.eEdD]+)\s*(?P<energy_total_scf_iteration>[-+0-9.eEdD]*)\s*\<\-\-\sCG\s*",
@@ -2110,7 +2110,7 @@ def build_onetepMainFileSimpleMatcher():
                 ElectronicParameterSubMatcher,
                 LRTDDFTSubMatcher,
                 edft_SubMatcher,
-                # TSSubMatcher,    
+                TSSubMatcher,    
                 KernelOptimSubMatcher,
                 energycomponentsSubMatcher,
                 singlepointSubMatcher,
