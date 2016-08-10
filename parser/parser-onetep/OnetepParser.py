@@ -577,14 +577,14 @@ class OnetepParserContext(object):
         self.numb_iter = section['x_onetep_number_of_scf_iterations_store']
         
          # parsing *.cell file to get the k path segments
-        # if file.endswith(extFile):   
-        #     pass
-        # else:    
-        #     if self.numb_iter:
-        #         backend.addValue('number_of_scf_iterations', self.numb_iter[-1])
-        #     else:
-        #         backend.addValue('number_of_scf_iterations', len(self.energy_total_scf_iteration_list))
-            # backend.addArrayValues('stress_tensor',np.asarray(self.stress_tensor_value))
+        if file.endswith(extFile):   
+            pass
+        else:    
+            if self.numb_iter:
+                backend.addValue('number_of_scf_iterations', self.numb_iter[-1])
+            else:
+                backend.addValue('number_of_scf_iterations', len(self.energy_total_scf_iteration_list))
+            backend.addArrayValues('stress_tensor',np.asarray(self.stress_tensor_value))
         
         
         Hr_J_converter = float(4.35974e-18)
@@ -2104,13 +2104,13 @@ def build_onetepMainFileSimpleMatcher():
                                 repeats = True),
                              ]) # CLOSI
                         
-                        ]),
+                    ]),
                 
                 
                 ElectronicParameterSubMatcher,
                 LRTDDFTSubMatcher,
                 edft_SubMatcher,
-                TSSubMatcher,    
+                # TSSubMatcher,    
                 KernelOptimSubMatcher,
                 energycomponentsSubMatcher,
                 singlepointSubMatcher,
