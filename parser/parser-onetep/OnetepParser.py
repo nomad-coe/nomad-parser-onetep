@@ -428,7 +428,7 @@ class OnetepParserContext(object):
         # self.energy_total_scf_iteration_list = []
         # backend.addValue('x_onetep_ts_index', gIndex)
         self.time_0 = section['x_onetep_frame_time_0'] 
-        
+        self.numb_iter = section['x_onetep_number_of_scf_iterations_store']
         self.initial_scf_iter_time = section['x_onetep_initial_scf_iteration_wall_time']
         hrbohr_to_N = float(8.238723e-8)
         hrang_to_N = float(4.359745e-8)
@@ -445,7 +445,7 @@ class OnetepParserContext(object):
                 f_st[i] = [float(j) for j in f_st[i]]
                 
                 f_st_int = f_st[i] 
-                if backend.addValue('x_onetep_ts_index', gIndex):
+                if self.numb_iter:
                     f_st_int = [x * hrbohr_to_N for x in f_st_int]
                 else:
                     f_st_int = [x * hrang_to_N for x in f_st_int]
@@ -574,7 +574,7 @@ class OnetepParserContext(object):
                 cFile = file
         fName = os.path.normpath(os.path.join(dirName, cFile))
 
-        self.numb_iter = section['x_onetep_number_of_scf_iterations_store']
+        
         
          # parsing *.cell file to get the k path segments
         if file.endswith(extFile):   
@@ -584,7 +584,7 @@ class OnetepParserContext(object):
                 backend.addValue('number_of_scf_iterations', self.numb_iter[-1])
             else:
                 backend.addValue('number_of_scf_iterations', len(self.energy_total_scf_iteration_list))
-            backend.addArrayValues('stress_tensor',np.asarray(self.stress_tensor_value))
+            
         
         
         Hr_J_converter = float(4.35974e-18)
@@ -1682,7 +1682,7 @@ def build_onetepMainFileSimpleMatcher():
     KernelOptimSubMatcher_ts = SM(name= 'kernel optimisation',
                                 startReStr = r"\>\>\> Density kernel optimised for the current NGWF basis\:",
                                 sections = ['x_onetep_section_kernel_optimisation'],
-                                # repeats = True,
+                                repeats = True,
 
                 subMatchers = [                     
                     SM(r"\s*Total free energy\s*\=\s*(?P<x_onetep_total_free_energy>[-+0-9.eEdD]*)\s*"),
@@ -1695,7 +1695,7 @@ def build_onetepMainFileSimpleMatcher():
     
     energycomponentsSubMatcher_ts = SM(name= 'energy_components',
                                     startReStr = r"\s*\-\-\-\-\-\-\-\-\-\-* ENERGY COMPONENTS \(Eh\) \-\-\-\-\-\-\-\-\-\-\-*",
-                                    # forwardMatch = True,
+                                    forwardMatch = True,
                                     # endReStr = r"\sBFGS\:\sfinished iteration\s*\0\s*",
                                     sections = ['x_onetep_section_energy_components'],
                                     
