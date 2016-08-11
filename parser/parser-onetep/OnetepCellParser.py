@@ -102,12 +102,14 @@ class OnetepCellParserContext(object):
             self.cell_store.append(vet[0])
             self.cell_store.append(vet[1])
             self.cell_store.append(vet[2]) # Reco
+    
     def onClose_section_system(self, backend, gIndex, section):    
         unitsap = section['x_onetep_units_atom_position']
-        
+        pos = section['x_onetep_store_atom_positions']
+       
         bohr_to_m = float(5.29177211e-11)
         ang_to_m = float(1e-10)
-        if unitsap:
+        if unitsap is not None:
             if unitsap[0] == 'bohr':
               
                 pos = section['x_onetep_store_atom_positions']
@@ -131,25 +133,28 @@ class OnetepCellParserContext(object):
                         pos[i]= [i * ang_to_m for i in pos[i]]
                         
                         self.onetep_atom_positions_store.append(pos[i])
+            else:
+                pass                
 
-
-        else:    
-
-            pos = section['x_onetep_store_atom_positions']
-            bohr_to_m = float(5.29177211e-11)
-            if pos:
-                self.at_nr = len(pos)
-                for i in range(0, self.at_nr):
-                    pos[i] = pos[i].split()
-                    pos[i] = [float(j) for j in pos[i]]
-                    pos[i]= [i * bohr_to_m for i in pos[i]]
-                    self.onetep_atom_positions_store.append(pos[i])
-        #get cached values of onetep_store_atom_labels
-            lab = section['x_onetep_store_atom_labels']
-                
+         
+        
+        bohr_to_m = float(5.29177211e-11)
+        
+        if pos:
+             
+            self.at_nr = len(pos)
             for i in range(0, self.at_nr):
-                lab[i] = re.sub('\s+', ' ', lab[i]).strip()
-            self.atom_labels_store.extend(lab)
+                pos[i] = pos[i].split()
+                pos[i] = [float(j) for j in pos[i]]
+                pos[i]= [i * bohr_to_m for i in pos[i]]
+                self.onetep_atom_positions_store.append(pos[i])
+        #get cached values of onetep_store_atom_labels
+        
+        lab = section['x_onetep_store_atom_labels']
+                
+        for i in range(0, len(lab)):
+            lab[i] = re.sub('\s+', ' ', lab[i]).strip()
+        self.atom_labels_store.extend(lab)
             
 
 

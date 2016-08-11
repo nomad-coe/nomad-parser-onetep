@@ -783,10 +783,11 @@ class OnetepParserContext(object):
             # backend.addArrayValues('atom_labels', np.asarray(self.atom_labels[-self.at_nr:]))
             
             self.at_nr_opt = len(pos_opt)
-            
+            bohr_to_m = float(5.29177211e-11)
             for i in range(0, self.at_nr_opt):
                 pos_opt[i] = pos_opt[i].split()
                 pos_opt[i] = [float(j) for j in pos_opt[i]]
+                pos_opt[i] = [i * bohr_to_m  for i in pos_opt[i]]
                 self.onetep_optimised_atom_positions.append(pos_opt[i])
             backend.addArrayValues('x_onetep_atom_positions', np.asarray(self.onetep_optimised_atom_positions[-self.number_of_atoms[0][0]:]))
 #         # #     print pos_opt[i]    
@@ -1058,9 +1059,27 @@ class OnetepParserContext(object):
                 self.at_nr = cellSuperContext.at_nr
                 self.atom_labels = cellSuperContext.atom_labels_store
                 self.onetep_atom_positions = cellSuperContext.onetep_atom_positions_store
-    # Processing the atom positions in fractionary coordinates (as given in the onetep output)
+                
+    #             for i in range(0, self.at_nr):
+
+    #             pos_a = [   self.a[0] * self.onetep_atom_positions[i][0]
+    #                   + self.b[0] * math.cos(np.deg2rad(self.gamma[0])) * self.onetep_atom_positions[i][1]
+    #                   + self.c[0] * math.cos(np.deg2rad(self.beta[0])) * self.onetep_atom_positions[i][2],
+
+    #                     self.b[0] * math.sin(self.gamma[0]) * self.onetep_atom_positions[i][1]
+    #                   + self.c[0] * self.onetep_atom_positions[i][2] * (( math.cos(np.deg2rad(self.alpha[0]))
+    #                   - math.cos(np.deg2rad(self.beta[0])) * math.cos(np.deg2rad(self.gamma[0])) ) / math.sin(np.deg2rad(self.gamma[0])) ),
+
+    #                    (self.volume / (self.a[0]*self.b[0] * math.sin(np.deg2rad(self.gamma[0])))) * self.onetep_atom_positions[i][2] ]
+
+    #             self.atom_positions.append(pos_a)
+            
+    #         # backend.addArrayValues('simulation_cell', np.asarray(self.cell[-3:]))
+    #         # backend.addValue('x_castep_cell_volume', self.volume)     
+    #         # backend.addArrayValues('atom_positions', np.asarray(self.atom_positions))
+    # # Processing the atom positions in fractionary coordinates (as given in the onetep output)
                 i = backend.openSection('section_system')
-               
+                
                 backend.addArrayValues('x_onetep_atom_positions', np.asarray(self.onetep_atom_positions))
 
                 backend.addArrayValues('atom_labels', np.asarray(self.atom_labels))
@@ -1729,7 +1748,7 @@ def build_onetepMainFileSimpleMatcher():
             startReStr = r"\sStarting BFGS iteration\s*(?P<x_onetep_geom_iteration_index>[0-9.]+)\s\.\.\.\s*",
             # sections = ['section_single_configuration_calculation','section_system'],
             endReStr = r"\sBFGS\s\:\sFinal Configuration\:\s", 
-                     
+            # required = True,         
             repeats = True,
             subMatchers = [               
 
@@ -1746,7 +1765,7 @@ def build_onetepMainFileSimpleMatcher():
                             endReStr = r"\s*[0-9]+\s*[+0-9.eEdD]+\s*[-+0-9.eEdD]*\s*\<\-\-\sCG\s*"),  
                         
                         SM(r"\<QC\>\s*\[NGWF iterations]\:\s*(?P<x_onetep_n_ngwf_iterations>[0-9]*)\s*"),
-                        SM(r"\<QC\>\s*\[total\_energy\]\:\s*(?P<energy_total__hartree>[-+0-9.eEdD]*)\s*"), # matching final converged total energy
+                        SM(r"\<QC\>\s*\[total\_energy\]\:\s*(?P<x_onetep_geom_optim_energy_total__hartree>[-+0-9.eEdD]*)\s*"), # matching final converged total energy
                         SM(r"\<QC\>\s*\[rms\_gradient\]\:\s*(?P<x_onetep_final_rms_gradient>[-+0-9.eEdD]*)\s*"),
                         
                         # geomOptimSubMatcher_improving_cycle,
@@ -1767,7 +1786,6 @@ def build_onetepMainFileSimpleMatcher():
     
     TSSubMatcher = SM(name = 'TS submatcher',
                     startReStr = r"\<\<\<\<\<* Starting ONETEP Transition State Search \>\>\>\>\>*",              
-                    required = True,
                     subMatchers = [ 
 
                         SM(startReStr = r"Calculating Ewald energy\s\.\.\.\s*(?P<x_onetep_ewald_correction__hartree>[-+0-9.eEdD]+)\sHartree",
@@ -1815,17 +1833,19 @@ def build_onetepMainFileSimpleMatcher():
                             ]),
         ])     
     
-    singlepointSubMatcher = SM(name = 'single_point',
-                # startReStr = r"\s*\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\- ENERGY COMPONENTS \(Eh\) \-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-" or              
-                startReStr = r"\s*\<\<\<\<\< CALCULATION SUMMARY \>\>\>\>\>\s*",
-                # startReStr = r"\>\>\> Density kernel optimised for the current NGWF basis\:",
-                weak = True,
+    singlepointSubMatcher = SM(name = 'single_point',      
+                # startReStr = r"\s*\<\<\<\<\< CALCULATION SUMMARY \>\>\>\>\>\s*",
+                startReStr = r"\>\>\> Density kernel optimised for the current NGWF basis\:",
+                # required = True,
+                # weak = True,
                 # startReStr = r"\s*\<* CALCULATION SUMMARY \>*\s*", 
+                forwardMatch = True,
                 endReStr = r"\sStarting BFGS iteration\s1\s\.\.\.",
                 sections = ["section_single_configuration_calculation","section_system"],
                 subMatchers = [ 
                     
-
+                    KernelOptimSubMatcher,
+                    energycomponentsSubMatcher,
                     
                     SM(sections = ['section_scf_iteration'],
                         startReStr = r"\s*[0-9]+\s*(?P<x_onetep_scf_rms_gradient__hartree>[+0-9.eEdD]+)\s*(?P<energy_total_scf_iteration__hartree>[-+0-9.eEdD]*)\s*\<\-\-\sCG\s*"),
@@ -1901,6 +1921,7 @@ def build_onetepMainFileSimpleMatcher():
                                     SM(r"\s*\+\s*[A-Za-z]+\s*[0-9]+\s*(?P<x_onetep_store_atom_forces>[-\d\.]+\s+[-\d\.]+\s+[-\d\.]+)\s*\+",
                                         repeats = True)
                          ]), 
+                    
                     geomOptimSubMatcher,
                     SM(r"\sBFGS\s\:\sGeometry optimization (?P<x_onetep_geom_converged>[a-z]+) to converge after\s*"),
                     SM(r"\s[A-Za-z]+\:\sGeometry\soptimization\scompleted\s(?P<x_onetep_geom_converged>[a-z]+)\.\s*"),
@@ -2110,8 +2131,8 @@ def build_onetepMainFileSimpleMatcher():
                 LRTDDFTSubMatcher,
                 edft_SubMatcher,
                 TSSubMatcher,    
-                KernelOptimSubMatcher,
-                energycomponentsSubMatcher,
+                # KernelOptimSubMatcher,
+                # energycomponentsSubMatcher,
                 singlepointSubMatcher,
                       
                 Dipole_moments,
