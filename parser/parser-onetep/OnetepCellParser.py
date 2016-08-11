@@ -58,37 +58,95 @@ class OnetepCellParserContext(object):
     def onClose_x_onetep_section_cell(self, backend, gIndex, section):
         """trigger called when _onetep_section_cell is closed"""
         # get cached values for onetep_cell_vector
+        units = section['x_onetep_units']
         vet = section['x_onetep_cell_vector']
-
-        vet[0] = vet[0].split()
-        vet[0] = [float(i) for i in vet[0]]
-
-        vet[1] = vet[1].split()
-        vet[1] = [float(i) for i in vet[1]]
-
-        vet[2] = vet[2].split()
-        vet[2] = [float(i) for i in vet[2]]
-
-        self.cell_store.append(vet[0])
-        self.cell_store.append(vet[1])
-        self.cell_store.append(vet[2]) # Reconstructing the unit cell vector by vector    
-       
+        bohr_to_m = float(5.29177211e-11)
+        ang_to_m = float(1e-10)
+        if units:
+            if units[0] == 'bohr':
+                vet[0] = vet[0].split()
+                vet[0] = [float(i) for i in vet[0]]
+                vet[0]= [i * bohr_to_m for i in vet[0]]
+                vet[1] = vet[1].split()
+                vet[1] = [float(i) for i in vet[1]]
+                vet[1]= [i * bohr_to_m for i in vet[1]]
+                vet[2] = vet[2].split()
+                vet[2] = [float(i) for i in vet[2]]
+                vet[2]= [i * bohr_to_m for i in vet[2]]
+                self.cell_store.append(vet[0])
+                self.cell_store.append(vet[1])
+                self.cell_store.append(vet[2]) # Reconstructing the unit cell vector by vector    
+            elif units[0] == 'ang':
+                vet[0] = vet[0].split()
+                vet[0] = [float(i) for i in vet[0]]
+                vet[0]= [i * ang_to_m for i in vet[0]]
+                vet[1] = vet[1].split()
+                vet[1] = [float(i) for i in vet[1]]
+                vet[1]= [i * ang_to_m for i in vet[1]]
+                vet[2] = vet[2].split()
+                vet[2] = [float(i) for i in vet[2]]
+                vet[2]= [i * ang_to_m for i in vet[2]]
+                self.cell_store.append(vet[0])
+                self.cell_store.append(vet[1])
+                self.cell_store.append(vet[2]) # Reconstructing t
+        else:
+            vet[0] = vet[0].split()
+            vet[0] = [float(i) for i in vet[0]]
+            vet[0]= [i * bohr_to_m for i in vet[0]]
+            vet[1] = vet[1].split()
+            vet[1] = [float(i) for i in vet[1]]
+            vet[1]= [i * bohr_to_m for i in vet[1]]
+            vet[2] = vet[2].split()
+            vet[2] = [float(i) for i in vet[2]]
+            vet[2]= [i * bohr_to_m for i in vet[2]]
+            self.cell_store.append(vet[0])
+            self.cell_store.append(vet[1])
+            self.cell_store.append(vet[2]) # Reco
     def onClose_section_system(self, backend, gIndex, section):    
-        pos = section['x_onetep_store_atom_positions']
+        unitsap = section['x_onetep_units_atom_position']
         
-        if pos:
-            self.at_nr = len(pos)
-            for i in range(0, self.at_nr):
-                pos[i] = pos[i].split()
-                pos[i] = [float(j) for j in pos[i]]
-                self.onetep_atom_positions_store.append(pos[i])
-            
-            
+        bohr_to_m = float(5.29177211e-11)
+        ang_to_m = float(1e-10)
+        if unitsap:
+            if unitsap[0] == 'bohr':
+              
+                pos = section['x_onetep_store_atom_positions']
+                       
+                if pos:
+                    self.at_nr = len(pos)
+                    for i in range(0, self.at_nr):
+                        pos[i] = pos[i].split()
+                        pos[i] = [float(j) for j in pos[i]]
+                        pos[i]= [i * bohr_to_m for i in pos[i]]
+                        self.onetep_atom_positions_store.append(pos[i])
+                    
+            elif unitsap[0] == 'ang':
+                pos = section['x_onetep_store_atom_positions']
+                   
+                if pos:
+                    self.at_nr = len(pos)
+                    for i in range(0, self.at_nr):
+                        pos[i] = pos[i].split()
+                        pos[i] = [float(j) for j in pos[i]]
+                        pos[i]= [i * ang_to_m for i in pos[i]]
+                        
+                        self.onetep_atom_positions_store.append(pos[i])
 
 
+        else:    
+
+            pos = section['x_onetep_store_atom_positions']
+            bohr_to_m = float(5.29177211e-11)
+            if pos:
+                self.at_nr = len(pos)
+                for i in range(0, self.at_nr):
+                    pos[i] = pos[i].split()
+                    pos[i] = [float(j) for j in pos[i]]
+                    pos[i]= [i * bohr_to_m for i in pos[i]]
+                    self.onetep_atom_positions_store.append(pos[i])
         #get cached values of onetep_store_atom_labels
             lab = section['x_onetep_store_atom_labels']
-            
+                
             for i in range(0, self.at_nr):
                 lab[i] = re.sub('\s+', ' ', lab[i]).strip()
             self.atom_labels_store.extend(lab)
@@ -117,6 +175,7 @@ def build_OnetepCellFileSimpleMatcher():
                         # forwardMatch = True,
                         sections = ["x_onetep_section_cell"],
                             subMatchers = [
+                                SM(r"(?P<x_onetep_units>[A-Za-z]+)"),
                                 SM(r"\s*(?P<x_onetep_cell_vector>[-+0-9.eEdD]+\s+[-+0-9.eEdD]+\s+[-+0-9.eEd]+)",
                      #SM(r"\s*(?P<onetep_cell_vector>[\d\.]+\s+[\d\.]+\s+[\d\.]+) \s*[-+0-9.eEdD]*\s*[-+0-9.eEdD]*\s*[-+0-9.eEdD]*",
                         # endReStr = "\%endblock\s*lattice\_cart\s*",
@@ -128,6 +187,7 @@ def build_OnetepCellFileSimpleMatcher():
                         # forwardMatch = True,
                         sections = ["x_onetep_section_cell"],
                             subMatchers = [
+                                SM(r"(?P<x_onetep_units>[A-Za-z]+)"),
                                 SM(r"\s*(?P<x_onetep_cell_vector>[-+0-9.eEdD]+\s+[-+0-9.eEdD]+\s+[-+0-9.eEd]+)",
                      #SM(r"\s*(?P<onetep_cell_vector>[\d\.]+\s+[\d\.]+\s+[\d\.]+) \s*[-+0-9.eEdD]*\s*[-+0-9.eEdD]*\s*[-+0-9.eEdD]*",
                         # endReStr = "\%endblock\s*lattice\_cart\s*",
@@ -139,6 +199,7 @@ def build_OnetepCellFileSimpleMatcher():
                         # forwardMatch = True,
                         sections = ["x_onetep_section_cell"],
                             subMatchers = [
+                                SM(r"(?P<x_onetep_units>[A-Za-z]+)"),
                                 SM(r"\s*(?P<x_onetep_cell_vector>[-+0-9.eEdD]+\s+[-+0-9.eEdD]+\s+[-+0-9.eEd]+)",
                      #SM(r"\s*(?P<onetep_cell_vector>[\d\.]+\s+[\d\.]+\s+[\d\.]+) \s*[-+0-9.eEdD]*\s*[-+0-9.eEdD]*\s*[-+0-9.eEdD]*",
                         # endReStr = "\%endblock\s*lattice\_cart\s*",
@@ -150,6 +211,7 @@ def build_OnetepCellFileSimpleMatcher():
                         # forwardMatch = True,
                         sections = ["x_onetep_section_cell"],
                             subMatchers = [
+                                SM(r"(?P<x_onetep_units>[A-Za-z]+)"),
                                 SM(r"\s*(?P<x_onetep_cell_vector>[-+0-9.eEdD]+\s+[-+0-9.eEdD]+\s+[-+0-9.eEd]+)",
                      #SM(r"\s*(?P<onetep_cell_vector>[\d\.]+\s+[\d\.]+\s+[\d\.]+) \s*[-+0-9.eEdD]*\s*[-+0-9.eEdD]*\s*[-+0-9.eEdD]*",
                         # endReStr = "\%endblock\s*lattice\_cart\s*",
@@ -162,6 +224,7 @@ def build_OnetepCellFileSimpleMatcher():
                         # forwardMatch = True,
                         sections = ["x_onetep_section_cell"],
                             subMatchers = [
+                                SM(r"(?P<x_onetep_units>[A-Za-z]+)"),
                                 SM(r"\s*(?P<x_onetep_cell_vector>[-+0-9.eEdD]+\s+[-+0-9.eEdD]+\s+[-+0-9.eEd]+)",
                      #SM(r"\s*(?P<onetep_cell_vector>[\d\.]+\s+[\d\.]+\s+[\d\.]+) \s*[-+0-9.eEdD]*\s*[-+0-9.eEdD]*\s*[-+0-9.eEdD]*",
                         # endReStr = "\%endblock\s*lattice\_cart\s*",
@@ -173,6 +236,7 @@ def build_OnetepCellFileSimpleMatcher():
                         # forwardMatch = True,
                         sections = ["x_onetep_section_cell"],
                             subMatchers = [
+                                SM(r"(?P<x_onetep_units>[A-Za-z]+)"),
                                 SM(r"\s*(?P<x_onetep_cell_vector>[-+0-9.eEdD]+\s+[-+0-9.eEdD]+\s+[-+0-9.eEd]+)",
                      #SM(r"\s*(?P<onetep_cell_vector>[\d\.]+\s+[\d\.]+\s+[\d\.]+) \s*[-+0-9.eEdD]*\s*[-+0-9.eEdD]*\s*[-+0-9.eEdD]*",
                         # endReStr = "\%endblock\s*lattice\_cart\s*",
@@ -184,6 +248,7 @@ def build_OnetepCellFileSimpleMatcher():
                         # forwardMatch = True,
                         sections = ["x_onetep_section_cell"],
                             subMatchers = [
+                                SM(r"(?P<x_onetep_units>[A-Za-z]+)"),
                                 SM(r"\s*(?P<x_onetep_cell_vector>[-+0-9.eEdD]+\s+[-+0-9.eEdD]+\s+[-+0-9.eEd]+)",
                      #SM(r"\s*(?P<onetep_cell_vector>[\d\.]+\s+[\d\.]+\s+[\d\.]+) \s*[-+0-9.eEdD]*\s*[-+0-9.eEdD]*\s*[-+0-9.eEdD]*",
                         # endReStr = "\%endblock\s*lattice\_cart\s*",
@@ -195,6 +260,7 @@ def build_OnetepCellFileSimpleMatcher():
                         # forwardMatch = True,
                         sections = ["x_onetep_section_cell"],
                             subMatchers = [
+                                SM(r"(?P<x_onetep_units>[A-Za-z]+)"),
                                 SM(r"\s*(?P<x_onetep_cell_vector>[-+0-9.eEdD]+\s+[-+0-9.eEdD]+\s+[-+0-9.eEd]+)",
                      #SM(r"\s*(?P<onetep_cell_vector>[\d\.]+\s+[\d\.]+\s+[\d\.]+) \s*[-+0-9.eEdD]*\s*[-+0-9.eEdD]*\s*[-+0-9.eEdD]*",
                         # endReStr = "\%endblock\s*lattice\_cart\s*",
@@ -207,6 +273,8 @@ def build_OnetepCellFileSimpleMatcher():
                         sections = ["x_onetep_section_atom_positions"],
                         endReStr = "\n",
                         subMatchers = [
+                        SM(r"(?P<x_onetep_units_atom_position>[A-Za-z]+)"),
+
                         SM(r"(?P<x_onetep_store_atom_labels>[A-Za-z0-9]+)\s*(?P<x_onetep_store_atom_positions>[-\d\.]+\s+[-\d\.]+\s+[-\d\.]+)",
                             # endReStr = "\n",
                             repeats = True)
@@ -217,6 +285,7 @@ def build_OnetepCellFileSimpleMatcher():
                         sections = ["x_onetep_section_atom_positions"],
                         endReStr = "\n",
                         subMatchers = [
+                        SM(r"(?P<x_onetep_units_atom_position>[A-Za-z]+)"),
                         SM(r"\s*(?P<x_onetep_store_atom_labels>[A-Za-z0-9]+)\s*(?P<x_onetep_store_atom_positions>[-\d\.]+\s+[-\d\.]+\s+[-\d\.]+)",
                             # endReStr = "\n",
                             repeats = True)
@@ -227,6 +296,7 @@ def build_OnetepCellFileSimpleMatcher():
                         sections = ["x_onetep_section_atom_positions"],
                         endReStr = "\n",
                         subMatchers = [
+                        SM(r"(?P<x_onetep_units_atom_position>[A-Za-z]+)"),
                         SM(r"(?P<x_onetep_store_atom_labels>[A-Za-z0-9]+)\s*(?P<x_onetep_store_atom_positions>[-\d\.]+\s+[-\d\.]+\s+[-\d\.]+)",
                             # endReStr = "\n",
                             repeats = True)
@@ -237,6 +307,7 @@ def build_OnetepCellFileSimpleMatcher():
                         sections = ["x_onetep_section_atom_positions"],
                         endReStr = "\n",
                         subMatchers = [
+                        SM(r"(?P<x_onetep_units_atom_position>[A-Za-z]+)"),
                         SM(r"\s*(?P<x_onetep_store_atom_labels>[A-Za-z0-9]+)\s*(?P<x_onetep_store_atom_positions>[-\d\.]+\s+[-\d\.]+\s+[-\d\.]+)",
                             # endReStr = "\n",
                             repeats = True)
@@ -250,6 +321,7 @@ def build_OnetepCellFileSimpleMatcher():
                         sections = ["x_onetep_section_atom_positions"],
                         endReStr = "\n",
                         subMatchers = [
+                        SM(r"(?P<x_onetep_units_atom_position>[A-Za-z]+)"),
                         SM(r"(?P<x_onetep_store_atom_labels>[A-Za-z0-9]+)\s*(?P<x_onetep_store_atom_positions>[-\d\.]+\s+[-\d\.]+\s+[-\d\.]+)",
                             # endReStr = "\n",
                             repeats = True)
@@ -260,6 +332,7 @@ def build_OnetepCellFileSimpleMatcher():
                         sections = ["x_onetep_section_atom_positions"],
                         endReStr = "\n",
                         subMatchers = [
+                        SM(r"(?P<x_onetep_units_atom_position>[A-Za-z]+)"),
                         SM(r"\s*(?P<x_onetep_store_atom_labels>[A-Za-z0-9]+)\s*(?P<x_onetep_store_atom_positions>[-\d\.]+\s+[-\d\.]+\s+[-\d\.]+)",
                             # endReStr = "\n",
                             repeats = True)
@@ -270,6 +343,7 @@ def build_OnetepCellFileSimpleMatcher():
                         sections = ["x_onetep_section_atom_positions"],
                         endReStr = "\n",
                         subMatchers = [
+                        SM(r"(?P<x_onetep_units_atom_position>[A-Za-z]+)"),
                         SM(r"(?P<x_onetep_store_atom_labels>[A-Za-z0-9]+)\s*(?P<x_onetep_store_atom_positions>[-\d\.]+\s+[-\d\.]+\s+[-\d\.]+)",
                             # endReStr = "\n",
                             repeats = True)
@@ -280,6 +354,7 @@ def build_OnetepCellFileSimpleMatcher():
                         sections = ["x_onetep_section_atom_positions"],
                         endReStr = "\n",
                         subMatchers = [
+                        SM(r"(?P<x_onetep_units_atom_position>[A-Za-z]+)"),
                         SM(r"\s*(?P<x_onetep_store_atom_labels>[A-Za-z0-9]+)\s*(?P<x_onetep_store_atom_positions>[-\d\.]+\s+[-\d\.]+\s+[-\d\.]+)",
                             # ,
                             repeats = True)

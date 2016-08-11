@@ -76,7 +76,7 @@ class OnetepTSParserContext(object):
         
         # for i in range (len(path_step)):
         #     self.path_ts.append(path_step[i])
-      
+        bohr_to_m = float(5.29177211e-11)
         Hr_J_converter = float(4.35974e-18)
         HrK_to_K_coverter= float(3.1668114e-6)
         hrang_to_N = float(4.359745e-8)
@@ -92,6 +92,7 @@ class OnetepTSParserContext(object):
                 vet[i] = vet[i].split()  
                 vet[i] = [float(j) for j in vet[i]]                
                 vet_list = vet[i]               
+                vet_list = [x * bohr_to_m for x in vet_list]
                 self.cell.append(vet_list)             
             self.frame_cell.append(self.cell)
              
@@ -103,6 +104,7 @@ class OnetepTSParserContext(object):
                 position[i] = position[i].split()
                 position[i] = [float(j) for j in position[i]]
                 pos_list = position[i]
+                pos_list = [x * bohr_to_m  for x in pos_list]
                 self.atom_position.append(pos_list)
             self.total_positions.append(self.atom_position)
       
@@ -127,7 +129,7 @@ class OnetepTSParserContext(object):
         
         # for i in range (len(path_final_ts)):
         #     self.path_final = path_final_ts[i]
-        
+        bohr_to_m = float(5.29177211e-11)
         Hr_J_converter = float(4.35974e-18)
         HrK_to_K_coverter= float(3.1668114e-6)
         
@@ -143,6 +145,7 @@ class OnetepTSParserContext(object):
                 vet_final[i] = vet_final[i].split()  
                 vet_final[i] = [float(j) for j in vet_final[i]]                
                 vetf_list = vet_final[i]               
+                vetf_list = [x * bohr_to_m for x in vetf_list]
                 self.cell_final.append(vetf_list)             
         # self.frame_cell_final.append(self.cell_final)
              
@@ -154,6 +157,7 @@ class OnetepTSParserContext(object):
                 position_final[i] = position_final[i].split()
                 position_final[i] = [float(j) for j in position_final[i]]
                 posf_list = position_final[i]
+                posf_list = [x * bohr_to_m for x in posf_list]
                 self.atomf_position.append(posf_list)
             # self.total_positions_final.append(self.atomf_position)
       
@@ -177,7 +181,7 @@ class OnetepTSParserContext(object):
         position_pro = section ['x_onetep_ts_positions_pro_store']
         energy_pro = section['x_onetep_ts_energy_product_store']
         
-        
+        bohr_to_m = float(5.29177211e-11)
         Hr_J_converter = float(4.35974e-18)
         HrK_to_K_coverter= float(3.1668114e-6)
         hrang_to_N = float(4.359745e-8)
@@ -195,6 +199,7 @@ class OnetepTSParserContext(object):
                 vet_pro[i] = vet_pro[i].split()  
                 vet_pro[i] = [float(j) for j in vet_pro[i]]                
                 vetp_list = vet_pro[i]               
+                vetp_list = [x * bohr_to_m for x in vetp_list]
                 self.cell_pro.append(vetp_list)             
         # self.frame_cell_final.append(self.cell_final)
              
@@ -206,6 +211,7 @@ class OnetepTSParserContext(object):
                 position_pro[i] = position_pro[i].split()
                 position_pro[i] = [float(j) for j in position_pro[i]]
                 posp_list = position_pro[i]
+                posp_list = [x * bohr_to_m for x in posp_list]
                 self.atomp_position.append(posp_list)
             # self.total_positions_final.append(self.atomf_position)
       
