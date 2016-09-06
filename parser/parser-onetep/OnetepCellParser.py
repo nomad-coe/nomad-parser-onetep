@@ -138,10 +138,10 @@ class OnetepCellParserContext(object):
 
          
         
-        bohr_to_m = float(5.29177211e-11)
+        
         
         if pos:
-             
+            bohr_to_m = float(5.29177211e-11) 
             self.at_nr = len(pos)
             for i in range(0, self.at_nr):
                 pos[i] = pos[i].split()
