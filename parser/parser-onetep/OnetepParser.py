@@ -1672,12 +1672,11 @@ def build_onetepMainFileSimpleMatcher():
                                     repeats = True,
 
                 subMatchers = [                     
-                    SM(r"\s*Total free energy\s*\=\s*(?P<x_onetep_total_free_energy>[-+0-9.eEdD]*)\s*"),
-                    SM(r"\s*Total energy\s*\=\s*(?P<x_onetep_total_energy>[-+0-9.eEdD]*)\s*"), # matching final converged total energy
-                    SM(r"\s*Estimated bandgap\s*\=\s*(?P<x_onetep_band_gap>[-+0-9.eEdD]*)\s*"),
-                    SM(r"\s*RMS occupancy error\s*\=\s*(?P<x_onetep_rms_occupancy_error>[-+0-9.eEdD]*)\s*"),
-                    SM(r"\s*\[H\,K\] commutator\s*\=\s*(?P<x_onetep_commutator>[-+0-9.eEdD]*)\s*"),
-                    ])
+                    SM(r"\s*Total free energy\s*\=\s*(?P<x_onetep_total_free_energy__hartree>[-+0-9.eEdD]*)\s*"),
+                    SM(r"\s*Total energy\s*\=\s*(?P<x_onetep_total_energy__hartree>[-+0-9.eEdD]*)\s*"), # matching final converged total energy
+                    SM(r"\s*Estimated bandgap\s*\=\s*(?P<x_onetep_band_gap__hartree>[-+0-9.eEdD]*)\s*"),
+                    SM(r"\s*RMS occupancy error\s*\=\s*(?P<x_onetep_rms_occupancy_error__hartree>[-+0-9.eEdD]*)\s*"),
+                    SM(r"\s*\[H\,K\] commutator\s*\=\s*(?P<x_onetep_commutator__hartree>[-+0-9.eEdD]*)\s*"), ])
 
     
     energycomponentsSubMatcher_frame = SM(name= 'energy_components',
@@ -1688,7 +1687,7 @@ def build_onetepMainFileSimpleMatcher():
 
                 subMatchers = [                     
                     
-                    SM(r"\s*\| Kinetic\s*\:\s*(?P<x_onetep_electronic_kinetic_energy>[-+0-9.eEdD]*)\s\|\s*"), # matching final converged total energy
+                    SM(r"\s*\| Kinetic\s*\:\s*(?P<x_onetep_electronic_kinetic_energy__hartree>[-+0-9.eEdD]*)\s\|\s*"), # matching final converged total energy
                     SM(r"\s*\| Pseudopotential \(local\)\s*\:\s*(?P<x_onetep_pseudo_local_store>[-+0-9.eEdD]*)\s\|\s*"), 
                     SM(r"\s*\| Pseudopotential \(non\-local\)\s*\:\s*(?P<x_onetep_pseudo_non_local_store>[-+0-9.eEdD]*)\s\|\s*"), 
                     SM(r"\s*\| Hartree\s*\:\s*(?P<x_onetep_energy_correction_hartree_store>[-+0-9.eEdD]*)\s\|\s*"), 
@@ -1704,11 +1703,11 @@ def build_onetepMainFileSimpleMatcher():
                                 repeats = True,
 
                 subMatchers = [                     
-                    SM(r"\s*Total free energy\s*\=\s*(?P<x_onetep_total_free_energy>[-+0-9.eEdD]*)\s*"),
-                    SM(r"\s*Total energy\s*\=\s*(?P<x_onetep_total_energy>[-+0-9.eEdD]*)\s*"), # matching final converged total energy
-                    SM(r"\s*Estimated bandgap\s*\=\s*(?P<x_onetep_band_gap>[-+0-9.eEdD]*)\s*"),
-                    SM(r"\s*RMS occupancy error\s*\=\s*(?P<x_onetep_rms_occupancy_error>[-+0-9.eEdD]*)\s*"),
-                    SM(r"\s*\[H\,K\] commutator\s*\=\s*(?P<x_onetep_commutator>[-+0-9.eEdD]*)\s*"),
+                    SM(r"\s*Total free energy\s*\=\s*(?P<x_onetep_total_free_energy__hartree>[-+0-9.eEdD]*)\s*"),
+                    SM(r"\s*Total energy\s*\=\s*(?P<x_onetep_total_energy__hartree>[-+0-9.eEdD]*)\s*"), # matching final converged total energy
+                    SM(r"\s*Estimated bandgap\s*\=\s*(?P<x_onetep_band_gap__hartree>[-+0-9.eEdD]*)\s*"),
+                    SM(r"\s*RMS occupancy error\s*\=\s*(?P<x_onetep_rms_occupancy_error__hartree>[-+0-9.eEdD]*)\s*"),
+                    SM(r"\s*\[H\,K\] commutator\s*\=\s*(?P<x_onetep_commutator__hartree>[-+0-9.eEdD]*)\s*"),
                     ])
 
     
@@ -1721,7 +1720,7 @@ def build_onetepMainFileSimpleMatcher():
 
                 subMatchers = [                     
                     
-                    SM(r"\s*\| Kinetic\s*\:\s*(?P<x_onetep_electronic_kinetic_energy>[-+0-9.eEdD]*)\s\|\s*"), # matching final converged total energy
+                    SM(r"\s*\| Kinetic\s*\:\s*(?P<x_onetep_electronic_kinetic_energy__hartree>[-+0-9.eEdD]*)\s\|\s*"), # matching final converged total energy
                     SM(r"\s*\| Pseudopotential \(local\)\s*\:\s*(?P<x_onetep_pseudo_local_store>[-+0-9.eEdD]*)\s\|\s*"), 
                     SM(r"\s*\| Pseudopotential \(non\-local\)\s*\:\s*(?P<x_onetep_pseudo_non_local_store>[-+0-9.eEdD]*)\s\|\s*"), 
                     SM(r"\s*\| Hartree\s*\:\s*(?P<x_onetep_energy_correction_hartree_store>[-+0-9.eEdD]*)\s\|\s*"), 
@@ -2037,8 +2036,8 @@ def build_onetepMainFileSimpleMatcher():
                 SM(r"\s*Total number of orbitals\:\s*(?P<x_onetep_total_number_orbitals>[0-9]+)\s*"),
                 SM(r"\s*Number of occupied orbitals\:\s*(?P<x_onetep_total_number_occ_orbitals>[0-9]+)\s*"),
                 SM(r"\s*Occupancy sum\:\s*(?P<x_onetep_occupancy_sum>[\d\.]+)\s*"),
-                SM(r"\s*HOMO\-LUMO gap\:\s*(?P<x_onetep_homo_lumo_gap>[\d\.]+)\s*"),
-                SM(r"\s*Mid\-gap level\:\s*(?P<x_onetep_mid_gap>[\d\.]+)\s*"), 
+                SM(r"\s*HOMO\-LUMO gap\:\s*(?P<x_onetep_homo_lumo_gap__hartree>[\d\.]+)\s*"),
+                SM(r"\s*Mid\-gap level\:\s*(?P<x_onetep_mid_gap__hartree>[\d\.]+)\s*"), 
                 SM(r"\s*(?P<x_onetep_orbital_number_store>[0-9]+)\s*(?P<x_onetep_orbital_energy_store>[-\d\.]+)\s*(?P<x_onetep_orbital_occupancy_store>[\d\.]+)\s*",repeats=True),  
                 Orbital_SubMatcher_2 ,
                 
