@@ -566,24 +566,24 @@ class OnetepParserContext(object):
             finite_basis_corr_energy[0] = float(finite_basis_corr_energy[0]) * J_float
             backend.addValue('x_onetep_total_energy_corrected_for_finite_basis', finite_basis_corr_energy[0])
         
-        extFile = ".md"       # Find the file with extension .cell
-        dirName = os.path.dirname(os.path.abspath(self.fName))
-        cFile = str()
-        for file in os.listdir(dirName):
-            if file.endswith(extFile):
-                cFile = file
-        fName = os.path.normpath(os.path.join(dirName, cFile))
+        # extFile = ".md"       # Find the file with extension .cell
+        # dirName = os.path.dirname(os.path.abspath(self.fName))
+        # cFile = str()
+        # for file in os.listdir(dirName):
+        #     if file.endswith(extFile):
+        #         cFile = file
+        # fName = os.path.normpath(os.path.join(dirName, cFile))
 
         
         
-         # parsing *.cell file to get the k path segments
-        if file.endswith(extFile):   
-            pass
-        else:    
-            if self.numb_iter:
-                backend.addValue('number_of_scf_iterations', self.numb_iter[-1])
-            else:
-                backend.addValue('number_of_scf_iterations', len(self.energy_total_scf_iteration_list))
+        #  # parsing *.cell file to get the k path segments
+        # if file.endswith(extFile):   
+        #     pass
+        # else:    
+        #     if self.numb_iter:
+        #         backend.addValue('number_of_scf_iterations', self.numb_iter[-1])
+        #     else:
+        #         backend.addValue('number_of_scf_iterations', len(self.energy_total_scf_iteration_list))
             
         
         
