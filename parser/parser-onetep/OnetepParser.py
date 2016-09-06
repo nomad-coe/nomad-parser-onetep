@@ -787,7 +787,7 @@ class OnetepParserContext(object):
             for i in range(0, self.at_nr_opt):
                 pos_opt[i] = pos_opt[i].split()
                 pos_opt[i] = [float(j) for j in pos_opt[i]]
-                pos_opt[i] = [i * bohr_to_m  for i in pos_opt[i]]
+                pos_opt[i] = [ii * bohr_to_m  for ii in pos_opt[i]]
                 self.onetep_optimised_atom_positions.append(pos_opt[i])
             backend.addArrayValues('x_onetep_atom_positions', np.asarray(self.onetep_optimised_atom_positions[-self.number_of_atoms[0][0]:]))
 #         # #     print pos_opt[i]    

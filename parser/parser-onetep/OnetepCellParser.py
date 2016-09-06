@@ -119,7 +119,7 @@ class OnetepCellParserContext(object):
                     for i in range(0, self.at_nr):
                         pos[i] = pos[i].split()
                         pos[i] = [float(j) for j in pos[i]]
-                        pos[i]= [i * bohr_to_m for i in pos[i]]
+                        pos[i]= [ii * bohr_to_m for ii in pos[i]]
                         self.onetep_atom_positions_store.append(pos[i])
                     
             elif unitsap[0] == 'ang':
@@ -130,7 +130,7 @@ class OnetepCellParserContext(object):
                     for i in range(0, self.at_nr):
                         pos[i] = pos[i].split()
                         pos[i] = [float(j) for j in pos[i]]
-                        pos[i]= [i * ang_to_m for i in pos[i]]
+                        pos[i]= [ii * ang_to_m for ii in pos[i]]
                         
                         self.onetep_atom_positions_store.append(pos[i])
             else:
@@ -146,7 +146,7 @@ class OnetepCellParserContext(object):
             for i in range(0, self.at_nr):
                 pos[i] = pos[i].split()
                 pos[i] = [float(j) for j in pos[i]]
-                pos[i]= [i * bohr_to_m for i in pos[i]]
+                pos[i]= [ii * bohr_to_m for ii in pos[i]]
                 self.onetep_atom_positions_store.append(pos[i])
         #get cached values of onetep_store_atom_labels
         
