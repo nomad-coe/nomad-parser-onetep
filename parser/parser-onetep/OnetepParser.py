@@ -294,29 +294,9 @@ class OnetepParserContext(object):
                     self.dispersion.append(match) 
             self.dispersion = "_".join(sorted(self.dispersion))
             backend.addValue('x_onetep_disp_method_name',self.dispersion)        
+            
     def onClose_section_method(self, backend, gIndex, section):
-        
-        # self.van_der_waals_name = section["van_der_Waals_method"]
-    
-
-        # if self.van_der_waals_name is not None:
-        #     dispersion_map = {
-        #     "1": "Elstner",
-        #     "2": "First damping function from Wu and Yang",
-        #     "3" : "Second damping function from Wu and Yang ",
-        #     "4" : "D2 Grimme",
-        #     }
-        #     self.dispersion = []
-        #     for name in self.van_der_waals_name:
-        #         match = dispersion_map.get(name)
-        #         if match:
-        #             self.dispersion.append(match)    
-        #     self.dispersion = "_".join(sorted(self.dispersion))
-        # else:
-        #     pass
-        # #backend.addValue('van_der_Waals_method',self.dispersion)
-        
-        
+          
         if self.functional_weight is not None:
             self.func_and_weight = []
             for i in range(len(self.functional_types)):
@@ -701,7 +681,7 @@ class OnetepParserContext(object):
     def onClose_section_system(self, backend, gIndex, section):
         self.number_of_atoms.append(section['x_onetep_number_of_atoms'])
         
-        
+        backend.addArrayValues('configuration_periodic_dimensions', np.asarray([True, True, True]))
        # = number_of_atoms[i].split()
         # self.at_nr = number_of_atoms[i]
      
@@ -1475,7 +1455,7 @@ def build_onetepMainFileSimpleMatcher():
             SM(r"lr\_tddft\_penalty\_tol\s*\:\s*(?P<x_onetep_lr_tddft_penalty_tol>[-+0-9.eEd]+)"),
             SM(r"lr\_tddft\_penalty\_tol\s*(?P<x_onetep_lr_tddft_penalty_tol>[-+0-9.eEd]+)"),
             ])
-    
+
     NGWFSubMatcher = SM(name = 'ngwf' ,            
         sections = ["x_onetep_section_ngwf_parameters"],
         forwardMatch = True,
@@ -1502,6 +1482,7 @@ def build_onetepMainFileSimpleMatcher():
             SM(r"Totals\:\s*(?P<x_onetep_number_of_atoms>[0-9]+)\s*(?P<x_onetep_number_of_ngwf>[0-9]+)\s*(?P<x_onetep_number_of_projectors>[0-9]+)",repeats=True),
             ])
     
+
         
     
     PopulationAnalysisParameterSubMatcher = SM(name = 'Pop_analysis' ,            
@@ -2100,6 +2081,8 @@ def build_onetepMainFileSimpleMatcher():
                   endReStr = r"\-\-\-\-\-* END INPUT FILE \-\-\-\-\-*",
                   subMatchers = [
 
+                        SM(r"is\_smeared\_ion\_rep*(?P<x_onetep_is_smearing>[a-zA-Z]+)"),
+                        SM(r"pbc\_correction\_cutoff*(?P<x_onetep_pbc_cutoff>[0-9a-zA-Z_.]*)"),
                         TSParameterSubMatcher,
                         LRTDDFT_parametersSubMatcher,
                         NGWFSubMatcher,
