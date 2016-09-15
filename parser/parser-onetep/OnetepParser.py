@@ -681,7 +681,7 @@ class OnetepParserContext(object):
     def onClose_section_system(self, backend, gIndex, section):
         self.number_of_atoms.append(section['x_onetep_number_of_atoms'])
         
-        backend.addArrayValues('configuration_periodic_dimensions', np.asarray([True, True, True]))
+        
        # = number_of_atoms[i].split()
         # self.at_nr = number_of_atoms[i]
      
@@ -969,6 +969,7 @@ class OnetepParserContext(object):
             self.pen.extend(penalties)
         if step:
             self.step.extend(step)
+    
     def onClose_x_onetep_section_tddft_excitations(self, backend, gIndex, section):         
         
         ex_energies =section['x_onetep_tddft_excit_energy_store']
@@ -984,6 +985,15 @@ class OnetepParserContext(object):
             
             self.life_time.extend(life)
     
+    def onClose_x_onetep_section_edft_parameters(self, backend, gIndex, section):    
+        if section['x_onetep_edft_smearing_kind'] and section['x_onetep_edft_smearing_width']:
+            sm_kind = section['x_onetep_edft_smearing_kind']
+            sm_width = section['x_onetep_edft_smearing_width']
+            gindexsis =  backend.openSection('section_method') 
+            backend.addValue('smearing_kind', sm_kind[0])
+            backend.addValue('smearing_width', sm_width[0])
+            backend.closeSection('section_method',gindexsis)  
+
     def onClose_x_onetep_section_tddft(self, backend, gIndex, section):
         
         if self.tddft_energy: 
@@ -1000,10 +1010,18 @@ class OnetepParserContext(object):
             backend.addArrayValues('x_onetep_tddft_excit_lifetime',np.asarray(self.life_time))
     
     def onClose_section_run(self, backend, gIndex, section):
+        if section['x_onetep_is_smearing'] or section['x_onetep_pbc_cutoff']:
+            gindexsis =  backend.openSection('section_system') 
+            backend.addArrayValues('configuration_periodic_dimensions', np.asarray([False, False, False]))
+            backend.closeSection('section_system',gindexsis) 
+        else:
+            gindexsis =  backend.openSection('section_system') 
+            backend.addArrayValues('configuration_periodic_dimensions', np.asarray([True, True, True]))    
+            backend.closeSection('section_system',gindexsis) 
         
         f_st_band = section['x_onetep_store_atom_forces_band']
        
-        # if f_st_band:
+       # if f_st_band:
         #     gindex_band = 1
         #     for i in range(0, self.at_nr):
         #         f_st_band[i] = f_st_band[i].split()
