@@ -31,6 +31,8 @@ class OnetepParserContext(object):
 
     def __init__(self):
         """ Initialise variables used within the current superContext """
+        self.secMethodIndex =[]
+        self.secSystemDescriptionIndex =[]
         self.functionals                       = []
         self.func_total                        = []
         self.relativistic                      = []
@@ -296,7 +298,7 @@ class OnetepParserContext(object):
             backend.addValue('x_onetep_disp_method_name',self.dispersion)        
             
     def onClose_section_method(self, backend, gIndex, section):
-          
+        self.secMethodIndex = gIndex  
         if self.functional_weight is not None:
             self.func_and_weight = []
             for i in range(len(self.functional_types)):
@@ -546,6 +548,8 @@ class OnetepParserContext(object):
             finite_basis_corr_energy[0] = float(finite_basis_corr_energy[0]) * J_float
             backend.addValue('x_onetep_total_energy_corrected_for_finite_basis', finite_basis_corr_energy[0])
         
+        backend.addValue('single_configuration_to_calculation_method_ref', self.secMethodIndex)
+        backend.addValue('single_configuration_calculation_to_system_ref', self.secSystemDescriptionIndex)
         # extFile = ".md"       # Find the file with extension .cell
         # dirName = os.path.dirname(os.path.abspath(self.fName))
         # cFile = str()
@@ -679,6 +683,7 @@ class OnetepParserContext(object):
 ######################################################################################
 
     def onClose_section_system(self, backend, gIndex, section):
+        self.secSystemDescriptionIndex = gIndex
         self.number_of_atoms.append(section['x_onetep_number_of_atoms'])
         
         
