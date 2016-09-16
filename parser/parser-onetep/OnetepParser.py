@@ -548,7 +548,9 @@ class OnetepParserContext(object):
             finite_basis_corr_energy[0] = float(finite_basis_corr_energy[0]) * J_float
             backend.addValue('x_onetep_total_energy_corrected_for_finite_basis', finite_basis_corr_energy[0])
         
-        backend.addValue('single_configuration_to_calculation_method_ref', self.secMethodIndex)
+        if self.secMethodIndex is not None:
+            backend.addValue('single_configuration_to_calculation_method_ref', self.secMethodIndex)
+        
         backend.addValue('single_configuration_calculation_to_system_ref', self.secSystemDescriptionIndex)
         # extFile = ".md"       # Find the file with extension .cell
         # dirName = os.path.dirname(os.path.abspath(self.fName))
