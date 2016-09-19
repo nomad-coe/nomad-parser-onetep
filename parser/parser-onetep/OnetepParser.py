@@ -2224,7 +2224,7 @@ def build_onetepMainFileSimpleMatcher():
                      
 
                                   ]), # CLOSING SM ProgramHeader
-           ,
+           
                 SM(name = 'input',
                   startReStr = r"\-\-\-\-\-* INPUT FILE \-\-\-\-\-*",
                   subFlags = SM.SubFlags.Unordered,                  
