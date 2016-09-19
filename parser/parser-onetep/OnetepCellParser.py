@@ -144,12 +144,12 @@ class OnetepCellParserContext(object):
             bohr_to_m = float(5.29177211e-11) 
             self.at_nr = len(pos)
             for i in range(0, self.at_nr):
-                pos[i] = pos[i].split()
+                # pos[i] = pos[i].split()
                 pos[i] = [float(j) for j in pos[i]]
                 pos[i]= [ii * bohr_to_m for ii in pos[i]]
                 self.onetep_atom_positions_store.append(pos[i])
         #get cached values of onetep_store_atom_labels
-        
+            
         lab = section['x_onetep_store_atom_labels']
                 
         for i in range(0, len(lab)):
