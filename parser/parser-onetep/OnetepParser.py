@@ -146,6 +146,7 @@ class OnetepParserContext(object):
         self.Integrateddensity = []
         self.step =[]
         self.excitations =[]
+        self.gindexsis=[]
         self.oscill_str =[]
         self.life_time =[]
         self.tddft_energy =[]   
@@ -549,10 +550,12 @@ class OnetepParserContext(object):
             finite_basis_corr_energy[0] = float(finite_basis_corr_energy[0]) * J_float
             backend.addValue('x_onetep_total_energy_corrected_for_finite_basis', finite_basis_corr_energy[0])
         
-        if self.secMethodIndex is not None:
-            backend.addValue('single_configuration_to_calculation_method_ref', self.secMethodIndex[0])
+        if self.secMethodIndex:
+            backend.addValue('single_configuration_to_calculation_method_ref', self.secMethodIndex)
+        elif self.gindexsis:
+            backend.addValue('single_configuration_to_calculation_method_ref', self.gindexsis)
         if self.secSystemDescriptionIndex is not None:
-            backend.addValue('single_configuration_calculation_to_system_ref', self.secSystemDescriptionIndex[0])
+            backend.addValue('single_configuration_calculation_to_system_ref', self.secSystemDescriptionIndex)
         # extFile = ".md"       # Find the file with extension .cell
         # dirName = os.path.dirname(os.path.abspath(self.fName))
         # cFile = str()
@@ -997,10 +1000,10 @@ class OnetepParserContext(object):
         if section['x_onetep_edft_smearing_kind'] and section['x_onetep_edft_smearing_width']:
             sm_kind = section['x_onetep_edft_smearing_kind']
             sm_width = section['x_onetep_edft_smearing_width']
-            gindexsis =  backend.openSection('section_method') 
+            self.gindexsis =  backend.openSection('section_method') 
             backend.addValue('smearing_kind', sm_kind[0])
             backend.addValue('smearing_width', sm_width[0])
-            backend.closeSection('section_method',gindexsis)  
+            backend.closeSection('section_method',self.gindexsis)  
 
     def onClose_x_onetep_section_tddft(self, backend, gIndex, section):
         
