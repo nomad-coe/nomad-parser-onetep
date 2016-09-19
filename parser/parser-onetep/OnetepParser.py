@@ -550,9 +550,9 @@ class OnetepParserContext(object):
             backend.addValue('x_onetep_total_energy_corrected_for_finite_basis', finite_basis_corr_energy[0])
         
         if self.secMethodIndex is not None:
-            backend.addValue('single_configuration_to_calculation_method_ref', self.secMethodIndex)
+            backend.addValue('single_configuration_to_calculation_method_ref', self.secMethodIndex[0])
         if self.secSystemDescriptionIndex is not None:
-            backend.addValue('single_configuration_calculation_to_system_ref', self.secSystemDescriptionIndex)
+            backend.addValue('single_configuration_calculation_to_system_ref', self.secSystemDescriptionIndex[0])
         # extFile = ".md"       # Find the file with extension .cell
         # dirName = os.path.dirname(os.path.abspath(self.fName))
         # cFile = str()
@@ -1331,25 +1331,6 @@ def build_onetepMainFileSimpleMatcher():
                              ]), # CLOSING onetep_section_functionals
             ])
     
-    calculationMethodSubMatcher2 = SM(name = 'calculationMethods',
-        startReStr = r"xcfunctional+",
-        forwardMatch = True,
-        sections = ["section_method"],
-        subMatchers = [
-
-            SM(name = "onetepXC",
-               startReStr = r"xcfunctional+",
-               subFlags = SM.SubFlags.Unordered,
-               forwardMatch = True,
-               sections = ["x_onetep_section_functionals"],
-               subMatchers = [
-                 SM(r"xcfunctional\s*\:\s(?P<x_onetep_functional_name>[A-Za-z0-9()]+)"),
-                 SM(r"xcfunctional\:\s*(?P<x_onetep_functional_name>[A-Za-z0-9()]+)"),
-                 SM(r"xcfunctional\s*(?P<x_onetep_functional_name>[A-Za-z0-9()]+)") ,
-                 SM(r"xcfunctional\s*\:\s*(?P<x_onetep_functional_name>[A-Za-z0-9()]+)"),
-                 
-                             ]), # CLOSING onetep_section_functionals
-            ])
     #        # SM(name = "onetepXC_definition",
     #        #    startReStr = r"\susing custom XC functional definition\:",
     #        #    #endReStr = r"\srelativistic treatment\s*\:\s*",
@@ -2033,18 +2014,7 @@ def build_onetepMainFileSimpleMatcher():
                     repeats = True),
                  ]) 
     
-    # Atomic_SubMatcher = SM (name = 'Atomic populations',
-    #         startReStr = r"\s*Atomic Populations\s*",
-    #         sections = ['x_onetep_section_mulliken_population_analysis'],
-    #         endReStr = r"\s*Bond\s*Population\s*Spin\s*Length\s\(bohr\)\s*",
-    #         #endReStr = r"\s*Bond\s*Population\s*Length\s\(A\)\s*",
-    #         repeats = True,
-    #         subMatchers = [ 
-    #             SM(r"\s*[a-zA-Z]+\s*[0-9.]+\s*(?P<x_onetep_total_orbital_store>[0-9.]+)\s*(?P<x_onetep_mulliken_charge_store>[0-9.]+)\s*", repeats = True),
-    #             SM(r"\s*[a-zA-Z]+\s*[0-9.]+\s*(?P<x_onetep_total_orbital_store>[0-9.]+)\s*(?P<x_onetep_mulliken_charge_store>[0-9.]+)\s*(?P<x_onetep_spin_store>[0-9.]+)\s*",       
-                    
-    #                 repeats = True),
-    #              ]) 
+   
     
     Orbital_SubMatcher_2 = SM (name = 'Orbital Information',
             startReStr = r"\s*\.\.\.\.\.\.\.\s*\-\-\- gap \-\-\s*\.\.\.\.\.\.\.\.\.\s*",
