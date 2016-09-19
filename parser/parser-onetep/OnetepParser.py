@@ -299,7 +299,7 @@ class OnetepParserContext(object):
             
     def onClose_section_method(self, backend, gIndex, section):
         self.secMethodIndex = gIndex 
-        print (gIndex,'ciao')
+        
         if self.functional_weight is not None:
             self.func_and_weight = []
             for i in range(len(self.functional_types)):
@@ -550,7 +550,6 @@ class OnetepParserContext(object):
             backend.addValue('x_onetep_total_energy_corrected_for_finite_basis', finite_basis_corr_energy[0])
         
         if self.secMethodIndex is not None:
-
             backend.addValue('single_configuration_to_calculation_method_ref', self.secMethodIndex)
         if self.secSystemDescriptionIndex is not None:
             backend.addValue('single_configuration_calculation_to_system_ref', self.secSystemDescriptionIndex)
@@ -1087,7 +1086,7 @@ class OnetepParserContext(object):
     # # Processing the atom positions in fractionary coordinates (as given in the onetep output)
                 i = backend.openSection('section_system')
                 
-                backend.addArrayValues('x_onetep_atom_positions', np.asarray(self.onetep_atom_positions[-self.number_of_atoms[0][0]:]))
+                backend.addArrayValues('x_onetep_atom_positions', np.asarray(self.onetep_atom_positions))
 
                 backend.addArrayValues('atom_labels', np.asarray(self.atom_labels))
 
