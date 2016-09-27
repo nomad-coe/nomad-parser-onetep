@@ -64,3 +64,23 @@ object OnetepParserSpec_5 extends Specification {
     }
   }
 }
+object OnetepParserSpec_6 extends Specification {
+  "OnetepParserTest" >> {
+    "test with json-events" >> {
+      ParserRun.parse(OnetepParser, "parsers/onetep/test/examples/benz_dim/benzene_dimer_vdw.out", "json-events") must_== ParseResult.ParseSuccess
+    }
+    "test with json" >> {
+      ParserRun.parse(OnetepParser, "parsers/onetep/test/examples/benz_dim/benzene_dimer_vdw.out", "json") must_== ParseResult.ParseSuccess
+    }
+  }
+}
+object OnetepParserSpec_7 extends Specification {
+  "OnetepParserTest" >> {
+    "test with json-events" >> {
+      ParserRun.parse(OnetepParser, "parsers/onetep/test/examples/flour/12-difluoroethane.out", "json-events") must_== ParseResult.ParseSuccess
+    }
+    "test with json" >> {
+      ParserRun.parse(OnetepParser, "parsers/onetep/test/examples/flour/12-difluoroethane.out", "json") must_== ParseResult.ParseSuccess
+    }
+  }
+}
