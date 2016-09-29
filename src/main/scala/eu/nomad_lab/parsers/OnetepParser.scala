@@ -21,7 +21,7 @@ object OnetepParser extends SimpleExternalParserGenerator(
       )) :: Nil
   ),
   mainFileTypes = Seq("text/.*"),
-  mainFileRe = """\s\|\s*Linear-Scaling Ab Initio Total Energy Program\s*\|\s*""".r,
+  mainFileRe = """\s*\|\s*Linear-Scaling Ab Initio Total Energy Program\s*\|\s*""".r,
   cmd = Seq(DefaultPythonInterpreter.pythonExe(), "${envDir}/parsers/onetep/parser/parser-onetep/OnetepParser.py",
     "--uri", "${mainFileUri}", "${mainFilePath}"),
   resList = Seq(
