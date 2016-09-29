@@ -351,41 +351,41 @@ class OnetepParserContext(object):
         backend.addValue('basis_set_cell_dependent_kind', basis_set_kind)
         backend.addValue('basis_set_cell_dependent_name', basis_set_name)
 
-    def onClose_x_onetep_section_cell_optim(self, backend, gIndex, section):
-        """trigger called when _onetep_section_cell is closed"""
-        # get cached values for onetep_cell_vector
-        vet = section['x_onetep_cell_vector_optim']
+#     def onClose_x_onetep_section_cell_optim(self, backend, gIndex, section):
+#         """trigger called when _onetep_section_cell is closed"""
+#         # get cached values for onetep_cell_vector
+#         vet = section['x_onetep_cell_vector_optim']
      
-        vet[0] = vet[0].split()
-        vet[0] = [float(i) for i in vet[0]]
+#         vet[0] = vet[0].split()
+#         vet[0] = [float(i) for i in vet[0]]
 
-        vet[1] = vet[1].split()
-        vet[1] = [float(i) for i in vet[1]]
+#         vet[1] = vet[1].split()
+#         vet[1] = [float(i) for i in vet[1]]
 
-        vet[2] = vet[2].split()
-        vet[2] = [float(i) for i in vet[2]]
+#         vet[2] = vet[2].split()
+#         vet[2] = [float(i) for i in vet[2]]
 
-        self.cell.append(vet[0])
-        self.cell.append(vet[1])
-        self.cell.append(vet[2]) # Reconstructing the unit cell vector by vector    
+#         self.cell.append(vet[0])
+#         self.cell.append(vet[1])
+#         self.cell.append(vet[2]) # Reconstructing the unit cell vector by vector    
 
      
-# # Here we recover the unit cell dimensions (both magnitudes and angles) (useful to convert fractional coordinates to cartesian)
-#     def onClose_x_onetep_section_atom_positions(self, backend, gIndex, section):
-#         """trigger called when _onetep_section_atom_positions is closed"""
-#         # get cached values for cell magnitudes and angles
-#         self.a = section['x_onetep_cell_length_a']
-#         self.b = section['x_onetep_cell_length_b']
-#         self.c = section['x_onetep_cell_length_c']
-#         self.alpha = section['x_onetep_cell_angle_alpha']
-#         self.beta  = section['x_onetep_cell_angle_beta']
-#         self.gamma = section['x_onetep_cell_angle_gamma']
-#         self.volume = np.sqrt( 1 - math.cos(np.deg2rad(self.alpha[0]))**2
-#                                  - math.cos(np.deg2rad(self.beta[0]))**2
-#                                  - math.cos(np.deg2rad(self.gamma[0]))**2
-#                                  + 2 * math.cos(np.deg2rad(self.alpha[0]))
-#                                      * math.cos(np.deg2rad(self.beta[0]))
-#                                      * math.cos(np.deg2rad(self.gamma[0])) ) * self.a[0]*self.b[0]*self.c[0]
+# # # Here we recover the unit cell dimensions (both magnitudes and angles) (useful to convert fractional coordinates to cartesian)
+# #     def onClose_x_onetep_section_atom_positions(self, backend, gIndex, section):
+# #         """trigger called when _onetep_section_atom_positions is closed"""
+# #         # get cached values for cell magnitudes and angles
+# #         self.a = section['x_onetep_cell_length_a']
+# #         self.b = section['x_onetep_cell_length_b']
+# #         self.c = section['x_onetep_cell_length_c']
+# #         self.alpha = section['x_onetep_cell_angle_alpha']
+# #         self.beta  = section['x_onetep_cell_angle_beta']
+# #         self.gamma = section['x_onetep_cell_angle_gamma']
+# #         self.volume = np.sqrt( 1 - math.cos(np.deg2rad(self.alpha[0]))**2
+# #                                  - math.cos(np.deg2rad(self.beta[0]))**2
+# #                                  - math.cos(np.deg2rad(self.gamma[0]))**2
+# #                                  + 2 * math.cos(np.deg2rad(self.alpha[0]))
+# #                                      * math.cos(np.deg2rad(self.beta[0]))
+# #                                      * math.cos(np.deg2rad(self.gamma[0])) ) * self.a[0]*self.b[0]*self.c[0]
 
     def onClose_x_onetep_section_atom_positions_optim(self, backend, gIndex, section):
         """trigger called when _onetep_section_atom_positions is closed"""
@@ -780,7 +780,7 @@ class OnetepParserContext(object):
                 pos_opt[i] = [float(j) for j in pos_opt[i]]
                 pos_opt[i] = [ii * bohr_to_m  for ii in pos_opt[i]]
                 self.onetep_optimised_atom_positions.append(pos_opt[i])
-            backend.addArrayValues('x_onetep_atom_positions', np.asarray(self.onetep_optimised_atom_positions[-self.number_of_atoms[0][0]:]))
+            backend.addArrayValues('atom_positions', np.asarray(self.onetep_optimised_atom_positions[-self.number_of_atoms[0][0]:]))
 #         # #     print pos_opt[i]    
        
 # # Converting the fractional atomic positions (x) to cartesian coordinates (X) ( X = M^-1 x )
@@ -1089,7 +1089,9 @@ class OnetepParserContext(object):
     # # Processing the atom positions in fractionary coordinates (as given in the onetep output)
                 i = backend.openSection('section_system')
                 
-                backend.addArrayValues('x_onetep_atom_positions', np.asarray(self.onetep_atom_positions))
+                # backend.addArrayValues('x_onetep_atom_positions', np.asarray(self.onetep_atom_positions))
+
+                backend.addArrayValues('atom_positions', np.asarray(self.onetep_atom_positions))
 
                 backend.addArrayValues('atom_labels', np.asarray(self.atom_labels))
 
