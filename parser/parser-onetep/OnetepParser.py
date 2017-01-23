@@ -1173,6 +1173,7 @@ class OnetepParserContext(object):
                         backend.addValue('x_onetep_ts_path_ts_final', self.ts_path_f)    
                         backend.closeSection('x_onetep_section_ts_final',gIndex)    
                     
+                    self.basis_set_kind_ts = 'psinc_functions'
                     backend.openSection('x_onetep_section_ts_product')
                     backend.addValue('x_onetep_ts_energy_product', self.ts_total_energy_p)
                     backend.addArrayValues('x_onetep_ts_cell_vectors_product', np.asarray(self.ts_cell_vector_p))
@@ -1181,6 +1182,7 @@ class OnetepParserContext(object):
                     backend.addValue('x_onetep_ts_path_product', self.ts_path_p)    
                     backend.closeSection('x_onetep_section_ts_product',gIndex)
 
+                    backend.addValue('program_basis_set_type', self.basis_set_kind_ts)        
         # MDSuperContext = OnetepMDParser.OnetepMDParserContext(False)
         # MDParser = AncillaryParser(
         #     fileDescription = OnetepMDParser.build_OnetepMDFileSimpleMatcher(),
