@@ -151,6 +151,8 @@ class OnetepParserContext(object):
         self.life_time =[]
         self.tddft_energy =[]   
         self.number_of_atoms =[]
+        self.basis_set_kind = []
+        self.basis_set_name=[]
     def onClose_x_onetep_section_tddft(self, backend, gIndex, section):
         energies =['x_onetep_tddft_energy_store']
         if energies:
@@ -345,11 +347,11 @@ class OnetepParserContext(object):
         eVtoRy = 0.073498618
         ecut_str_name = int(round(eVtoRy*self.ecut))
 
-        basis_set_kind = 'psinc_functions'
-        basis_set_name = 'psinc_functions'
+        self.basis_set_kind = 'psinc_functions'
+        self.basis_set_name = 'psinc_functions'
         backend.addValue('basis_set_planewave_cutoff', self.ecut)
-        backend.addValue('basis_set_cell_dependent_kind', basis_set_kind)
-        backend.addValue('basis_set_cell_dependent_name', basis_set_name)
+        backend.addValue('basis_set_cell_dependent_kind', self.basis_set_kind)
+        backend.addValue('basis_set_cell_dependent_name', self.basis_set_name)
 
 #     def onClose_x_onetep_section_cell_optim(self, backend, gIndex, section):
 #         """trigger called when _onetep_section_cell is closed"""
@@ -1021,6 +1023,7 @@ class OnetepParserContext(object):
             backend.addArrayValues('x_onetep_tddft_excit_lifetime',np.asarray(self.life_time))
     
     def onClose_section_run(self, backend, gIndex, section):
+        backend.addValue('program_basis_set_type', self.basis_set_kind)
         if section['x_onetep_is_smearing'] or section['x_onetep_pbc_cutoff']:
             gindexsis =  backend.openSection('section_system') 
             backend.addArrayValues('configuration_periodic_dimensions', np.asarray([False, False, False]))
