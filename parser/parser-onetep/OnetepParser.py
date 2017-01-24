@@ -1023,7 +1023,7 @@ class OnetepParserContext(object):
             backend.addArrayValues('x_onetep_tddft_excit_lifetime',np.asarray(self.life_time))
     
     def onClose_section_run(self, backend, gIndex, section):
-        backend.addValue('program_basis_set_type', self.basis_set_kind)
+        #backend.addValue('program_basis_set_type', self.basis_set_kind)
         if section['x_onetep_is_smearing'] or section['x_onetep_pbc_cutoff']:
             gindexsis =  backend.openSection('section_system') 
             backend.addArrayValues('configuration_periodic_dimensions', np.asarray([False, False, False]))
@@ -1173,7 +1173,7 @@ class OnetepParserContext(object):
                         backend.addValue('x_onetep_ts_path_ts_final', self.ts_path_f)    
                         backend.closeSection('x_onetep_section_ts_final',gIndex)    
                     
-                    #basis_set_kind_ts = 'psinc_functions'
+                    
                     backend.openSection('x_onetep_section_ts_product')
                     backend.addValue('x_onetep_ts_energy_product', self.ts_total_energy_p)
                     backend.addArrayValues('x_onetep_ts_cell_vectors_product', np.asarray(self.ts_cell_vector_p))
@@ -1182,7 +1182,11 @@ class OnetepParserContext(object):
                     backend.addValue('x_onetep_ts_path_product', self.ts_path_p)    
                     backend.closeSection('x_onetep_section_ts_product',gIndex)
 
-                    backend.addValue('program_basis_set_type', 'psinc_functions')        
+        if self.ts_total_energy is None:
+            backend.addValue('program_basis_set_type', self.basis_set_kind)  
+        else:
+            basis_set_kind_ts = 'psinc_functions'
+            backend.addValue('program_basis_set_type', basis_set_kind_ts)           
         # MDSuperContext = OnetepMDParser.OnetepMDParserContext(False)
         # MDParser = AncillaryParser(
         #     fileDescription = OnetepMDParser.build_OnetepMDFileSimpleMatcher(),
