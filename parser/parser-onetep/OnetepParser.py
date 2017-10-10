@@ -2114,7 +2114,7 @@ def build_onetepMainFileSimpleMatcher():
                   subMatchers = [
 
                      SM(r"\s\|\s*Version\s(?P<program_version>[0-9a-zA-Z_.]*)"),
-                     SM(r"\s\|\s*in all publications arising from your use of (?P<program_name>[a-zA-Z]+)*"),
+                     #SM(r"\s\|\s*in all publications arising from your use of (?P<program_name>[a-zA-Z]+)*"),
                      SM(r"\s\|\s*(?P<program_name>[a-zA-Z]+)\sis based on developments described in the following\s*\|\s*"),
                      SM(r"\s*Default threads\:\s(?P<x_onetep_number_of_processors>[0-9.]*)"),
                      
