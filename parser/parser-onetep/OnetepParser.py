@@ -36,7 +36,7 @@ class OnetepParserContext(object):
         self.functionals                       = []
         self.func_total                        = []
         self.relativistic                      = []
-        self.dispersion                        = None
+        #self.dispersion                        = []
         self.cell                              = []
         self.at_nr                             = 0
         self.atom_type_mass                    = []
@@ -110,6 +110,7 @@ class OnetepParserContext(object):
         self.energy_frame =[]
         self.total_energy_frame = []
         self.frame_energies =[]
+        self.secMethodIndex =[]
         self.scfgIndex=[]
         self.n_spin_channels = []
         self.n_spin_channels_bands = []
@@ -283,8 +284,11 @@ class OnetepParserContext(object):
                     self.diis.append(match)    
             backend.addValue('x_onetep_kernel_diis_type',self.diis)
 
+       
     def onClose_x_onetep_section_van_der_Waals_parameters(self, backend, gIndex, section):
         self.van_der_waals_name = section["x_onetep_disp_method_name_store"]
+        self.dispersion = []
+        
         if self.van_der_waals_name is not None:
             dispersion_map = {
             "1": "Elstner",
@@ -292,17 +296,23 @@ class OnetepParserContext(object):
             "3" : "Second damping function from Wu and Yang ",
             "4" : "D2 Grimme",
             }
-            self.dispersion = []
+            #self.dispersion = []
             for name in self.van_der_waals_name:
                 match = dispersion_map.get(name)
                 if match:
                     self.dispersion.append(match) 
             self.dispersion = "_".join(sorted(self.dispersion))
-            backend.addValue('x_onetep_disp_method_name',self.dispersion)        
-            
+            self.disp = str(self.dispersion)
+            backend.openSection('section_method')
+            backend.addValue('van_der_Waals_method',self.disp)        
+            backend.closeSection('section_method',gIndex+1)
+    
+
     def onClose_section_method(self, backend, gIndex, section):
-        self.secMethodIndex = gIndex 
         
+        #self.disp1 = section['van_der_Waals_method']
+           
+        self.disp1= None
         if self.functional_weight is not None:
             self.func_and_weight = []
             for i in range(len(self.functional_types)):
@@ -316,8 +326,10 @@ class OnetepParserContext(object):
             backend.addValue('XC_functional', "_".join(sorted(self.functionals)))
             # backend.addValue('relativity_method', self.relativistic)
         #if self.functional_weight = 0
-            if self.dispersion is not None:
-                backend.addValue('XC_method_current', ("_".join(sorted(self.func_total)))+'_'+self.dispersion+'_'+self.relativistic)
+            
+            if self.disp1 is not None:
+                
+                backend.addValue('XC_method_current', ("_".join(sorted(self.func_total)))+'_'+self.disp1+'_'+self.relativistic)
             else:
                 backend.addValue('XC_method_current', ("_".join(sorted(self.func_total)))+'_'+self.relativistic)
         else:
@@ -329,14 +341,16 @@ class OnetepParserContext(object):
                 backend.closeSection('section_XC_functionals',gIndex+i)
             backend.addValue('XC_functional', "_".join(sorted(self.functionals)))
             # backend.addValue('relativity_method', self.relativistic)
-            if self.dispersion is not None:
-                backend.addValue('XC_method_current', ("_".join(sorted(self.functionals)))+'_'+self.dispersion+'_'+self.relativistic)
+            if self.disp1 is not None:
+                backend.addValue('XC_method_current', ("_".join(sorted(self.functionals)))+'_'+self.disp1
+                    +'_'+self.relativistic)
             else:
                 backend.addValue('XC_method_current', ("_".join(sorted(self.functionals))))
         
         if self.n_spin_channels:
             backend.addValue('number_of_spin_channels', self.n_spin_channels[0])
-         
+        
+     
 
     
     
