@@ -1867,6 +1867,16 @@ def build_onetepMainFileSimpleMatcher():
                                                 ]), 
                             ]),
         ])     
+    pdos = SM (name = 'pdos',
+            startReStr = r"\s\=\>\sComputing Gaussian smeared pDOS\s\<\=\s*",
+            sections = ["section_dos"],
+            repeats = True,
+            # endReStr = r"\=*\s*",
+            # endReStr =r"\s*\.\.\.\.\.\.\.\s*\-\-\- gap \-\-\s*\.\.\.\.\.\.\.\.\.\s*",
+            
+            subMatchers = [ 
+                SM(r"\<QC\>\s*\[pdoswts\(.*\)\]\:\s*(?P<dos_energies>[-\d\.]+)\s*",repeats=True), 
+                 ]) 
     
     singlepointSubMatcher = SM(name = 'single_point',      
                 # startReStr = r"\s*\<\<\<\<\< CALCULATION SUMMARY \>\>\>\>\>\s*",
@@ -1961,6 +1971,7 @@ def build_onetepMainFileSimpleMatcher():
                     SM(r"\sBFGS\s\:\sGeometry optimization (?P<x_onetep_geom_converged>[a-z]+) to converge after\s*"),
                     SM(r"\s[A-Za-z]+\:\sGeometry\soptimization\scompleted\s(?P<x_onetep_geom_converged>[a-z]+)\.\s*"),
                     geomOptim_finalSubMatcher,
+                   
         ])     
    
    
@@ -2106,6 +2117,8 @@ def build_onetepMainFileSimpleMatcher():
                 SM(r"\s*dz\s\=\s*(?P<x_onetep_total_dipole_moment_store>[-\d\.]+)\s*"),
                 SM(r"\s*Magnitude\s\(e\.bohr\)\:\s*(?P<x_onetep_total_dipole_moment_magnitude>[-\d\.]+)\s*"),
                  ]) 
+    
+ 
     ########################################
     # return main Parser ###################
     ########################################
@@ -2177,24 +2190,25 @@ def build_onetepMainFileSimpleMatcher():
                 # KernelOptimSubMatcher,
                 # energycomponentsSubMatcher,
                 singlepointSubMatcher,
-                      
+                     
                 Dipole_moments,
                 Mulliken_SubMatcher,
                 Natural_SubMatcher,
+                 
                 Orbital_SubMatcher,
+               
                 
-                
-                
+                #pdos,
                 SM(name = 'calc_time',
                     startReStr = r"\-\-\-*\sTIMING INFORMATION\s\-\-\-*",
-                    sections = ['x_onetep_section_time'],
+                    #sections = ['x_onetep_section_time'],
                     subMatchers = [
                         SM(r"AVERAGE TIME\:\s*(?P<x_onetep_avarage_time>[0-9.]*)"), # matching final converged total energy
-                        SM(r"TOTAL TIME\:\s*(?P<x_onetep_total_time>[0-9.]*)"),
+                        SM(r"TOTAL TIME\:\s*(?P<time_run_wall_end>[0-9.]*)"),
                         SM(r"Job completed\:\s*(?P<x_onetep_final_date>[0-9.-]*)(?P<x_onetep_final_time>[0-9.:]*)"),
                                       ]), # CLOSING section_onetep_time
                                         
-                  
+               
                 ])
                                
                 
