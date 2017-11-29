@@ -1114,7 +1114,7 @@ class OnetepParserContext(object):
 
                 backend.addValue('number_of_atoms', len(self.atom_labels))
             
-                backend.addArrayValues('simulation_cell', np.asarray(self.cell[-3:]))    
+                backend.addArrayValues('lattice_vectors', np.asarray(self.cell[-3:]))    
                
                 backend.closeSection('section_system', i )
         
