@@ -78,13 +78,13 @@ class OnetepBandParserContext(object):
 
 
 # Reading the number of spins
-    def onClose_x_Onetep_section_spin_number(self, backend, gIndex, section):
+    def onClose_x_onetep_section_spin_number(self, backend, gIndex, section):
 
         self.n_spin = section['x_Onetep_spin_number']
         
 
 # Storing the k point coordinates
-    def onClose_x_Onetep_section_scf_k_points(self, backend, gIndex, section):
+    def onClose_x_onetep_section_scf_k_points(self, backend, gIndex, section):
         """trigger called when _section_eigenvalues"""
 
 # Processing k points (given in fractional coordinates)
@@ -100,7 +100,7 @@ class OnetepBandParserContext(object):
 
 
 # Storing the eigenvalues
-    def onClose_x_Onetep_section_scf_eigenvalues(self, backend, gIndex, section):
+    def onClose_x_onetep_section_scf_eigenvalues(self, backend, gIndex, section):
         """trigger called when _section_eigenvalues"""
         Ha_to_J = 4.35974e-18
         #get cached values of Onetep_store_k_points

@@ -299,7 +299,7 @@ class OnetepParserContext(object):
             backend.addValue('x_onetep_kernel_diis_type',self.diis)
 
        
-    def onClose_x_onetep_section_van_der_Waals_parameters(self, backend, gIndex, section):
+    def onClose_x_onetep_section_van_der_waals_parameters(self, backend, gIndex, section):
         self.van_der_waals_name = section["x_onetep_disp_method_name_store"]
         self.dispersion = []
         
@@ -318,48 +318,48 @@ class OnetepParserContext(object):
             self.dispersion = "_".join(sorted(self.dispersion))
             self.disp = str(self.dispersion)
             backend.openSection('section_method')
-            backend.addValue('van_der_Waals_method',self.disp)        
+            backend.addValue('van_der_waals_method',self.disp)        
             backend.closeSection('section_method',gIndex+1)
     
 
     def onClose_section_method(self, backend, gIndex, section):
         
-        #self.disp1 = section['van_der_Waals_method']
+        #self.disp1 = section['van_der_waals_method']
            
         self.disp1= None
         if self.functional_weight is not None:
             self.func_and_weight = []
             for i in range(len(self.functional_types)):
                 self.func_total.append(self.functionals[i]+'_'+self.functional_weight[i]) 
-                backend.openSection('section_XC_functionals')            
-                backend.addValue('XC_functional_name', self.functionals[i]) 
-                backend.addValue('XC_functional_weight', self.functional_weight[i])
-                backend.closeSection('section_XC_functionals',gIndex+i)        
+                backend.openSection('section_xc_functionals')            
+                backend.addValue('xc_functional_name', self.functionals[i]) 
+                backend.addValue('xc_functional_weight', self.functional_weight[i])
+                backend.closeSection('section_xc_functionals',gIndex+i)        
         # Push the functional string into the backend
         # Push the relativistic treatment string into the backend
-            backend.addValue('XC_functional', "_".join(sorted(self.functionals)))
+            backend.addValue('xc_functional', "_".join(sorted(self.functionals)))
             # backend.addValue('relativity_method', self.relativistic)
         #if self.functional_weight = 0
             
             if self.disp1 is not None:
                 
-                backend.addValue('XC_method_current', ("_".join(sorted(self.func_total)))+'_'+self.disp1+'_'+self.relativistic)
+                backend.addValue('xc_method_current', ("_".join(sorted(self.func_total)))+'_'+self.disp1+'_'+self.relativistic)
             else:
-                backend.addValue('XC_method_current', ("_".join(sorted(self.func_total)))+'_'+self.relativistic)
+                backend.addValue('xc_method_current', ("_".join(sorted(self.func_total)))+'_'+self.relativistic)
         else:
             for i in range(len(self.functionals)):
           #      self.func_total.append(self.functionals[i]+'_'+self.functional_weight[i])
-                backend.openSection('section_XC_functionals')            
-                backend.addValue('XC_functional_name', self.functionals[i]) 
-         #       backend.addValue('XC_functional_weight', self.functional_weight[i])
-                backend.closeSection('section_XC_functionals',gIndex+i)
-            backend.addValue('XC_functional', "_".join(sorted(self.functionals)))
+                backend.openSection('section_xc_functionals')            
+                backend.addValue('xc_functional_name', self.functionals[i]) 
+         #       backend.addValue('xc_functional_weight', self.functional_weight[i])
+                backend.closeSection('section_xc_functionals',gIndex+i)
+            backend.addValue('xc_functional', "_".join(sorted(self.functionals)))
             # backend.addValue('relativity_method', self.relativistic)
             if self.disp1 is not None:
-                backend.addValue('XC_method_current', ("_".join(sorted(self.functionals)))+'_'+self.disp1
+                backend.addValue('xc_method_current', ("_".join(sorted(self.functionals)))+'_'+self.disp1
                     +'_'+self.relativistic)
             else:
-                backend.addValue('XC_method_current', ("_".join(sorted(self.functionals))))
+                backend.addValue('xc_method_current', ("_".join(sorted(self.functionals))))
         
         if self.n_spin_channels:
             backend.addValue('number_of_spin_channels', self.n_spin_channels[0])
@@ -467,8 +467,10 @@ class OnetepParserContext(object):
                 self.atom_forces.append(f_st_int)
                     
                 self.atom_forces = self.atom_forces[-self.number_of_atoms[0][0]:] 
-                    
+            
+            fId = backend.openSection('section_atom_forces')
             backend.addArrayValues('atom_forces', np.asarray(self.atom_forces))
+            backend.closeSection('section_atom_forces', fId)
         
         if f_ion is not None:# and self.at_nr_opt is not None:
             for i in range(0, len(f_ion)):
@@ -569,7 +571,7 @@ class OnetepParserContext(object):
         #     total_energy = section['energy_total']
         #     for i in range(len(total_energy)):
         #         self.disp_energy = abs(van_der_waals_energy[i] - total_energy[i])
-        #     backend.addValue('energy_van_der_Waals', self.disp_energy)
+        #     backend.addValue('energy_van_der_waals', self.disp_energy)
         
 
         finite_basis_corr_energy = section['x_onetep_total_energy_corrected_for_finite_basis_store'] ###Conversion to Jule
@@ -581,9 +583,9 @@ class OnetepParserContext(object):
             backend.addValue('x_onetep_total_energy_corrected_for_finite_basis', finite_basis_corr_energy[0])
         
         if self.secMethodIndex:
-            backend.addValue('single_configuration_to_calculation_method_ref', self.secMethodIndex)
+            backend.addValue('single_configuration_calculation_to_method_ref', self.secMethodIndex)
         elif self.gindexsis:
-            backend.addValue('single_configuration_to_calculation_method_ref', self.gindexsis)
+            backend.addValue('single_configuration_calculation_to_method_ref', self.gindexsis)
         if self.secSystemDescriptionIndex is not None:
             backend.addValue('single_configuration_calculation_to_system_ref', self.secSystemDescriptionIndex)
         # extFile = ".md"       # Find the file with extension .cell
@@ -618,7 +620,7 @@ class OnetepParserContext(object):
         if self.Hartree:
             backend.addValue('energy_correction_hartree',self.Hartree[0]*Hr_J_converter)
         if self.Exchangecorrelation:
-            backend.addValue('energy_XC',self.Exchangecorrelation[0]*Hr_J_converter)
+            backend.addValue('energy_xc',self.Exchangecorrelation[0]*Hr_J_converter)
         if self.Ewald:
             backend.addValue('x_onetep_ewald_correction',self.Ewald[0]*Hr_J_converter)
         if self.DispersionCorrection:
@@ -642,12 +644,12 @@ class OnetepParserContext(object):
        
 
 
-    def onClose_x_onetep_section_SCF_iteration_frame(self, backend, gIndex, section):
+    def onClose_x_onetep_section_scf_iteration_frame(self, backend, gIndex, section):
         
         self.frame_free_energy = section['x_onetep_frame_energy_free']
-        self.frame_energies = section['x_onetep_SCF_frame_energy']
-        self.frame_energies_gain = section['x_onetep_SCF_frame_energy_gain']               
-        self.frame_T0 = section ['x_onetep_frame_energy_total_T0']
+        self.frame_energies = section['x_onetep_scf_frame_energy']
+        self.frame_energies_gain = section['x_onetep_scf_frame_energy_gain']               
+        self.frame_T0 = section ['x_onetep_frame_energy_total_t0']
         self.wall_time_store = section ['x_onetep_frame_time_scf_iteration_wall_end']
 
         frame_time = section['x_onetep_frame_time']
@@ -974,7 +976,7 @@ class OnetepParserContext(object):
         self.nonlocal_pseudo = section['x_onetep_pseudo_non_local_store']
         
         self.Hartree = section['x_onetep_energy_correction_hartree_store']
-        self.Exchangecorrelation = section['x_onetep_energy_XC_store'] 
+        self.Exchangecorrelation = section['x_onetep_energy_xc_store'] 
         self.Ewald = section['x_onetep_ewald_correction_store']
         self.DispersionCorrection =section['x_onetep_dispersion_correction_store'] 
         self.Integrateddensity = section['x_onetep_integrated_density_store']
@@ -1268,7 +1270,7 @@ class OnetepParserContext(object):
         #             if i > 0:
                      
         #                 backend.addValue('energy_free', self.energy_frame_free[i-1]) 
-        #                 backend.addValue('energy_total_T0',self.energy_frame_T0[i-1])
+        #                 backend.addValue('energy_total_t0',self.energy_frame_T0[i-1])
                     
         #             if i > 0:    
         #                 for j in range(len(self.frame_energies)):
@@ -1284,10 +1286,10 @@ class OnetepParserContext(object):
 
         #         backend.openSection('section_frame_sequence')
         #         backend.addValue('number_of_frames_in_sequence',(len(self.frame_potential)))
-        #         backend.addArrayValues('frame_sequence_temperature', np.asarray(self.frame_temp))
-        #         backend.addArrayValues('frame_sequence_pressure', np.asarray(self.frame_press))
-        #         backend.addArrayValues('frame_sequence_kinetic_energy', np.asarray(self.frame_kinetic))
-        #         backend.addArrayValues('frame_sequence_potential_energy', np.asarray(self.frame_potential))
+        #         backend.addArrayValues('xxx_instant_temperature', np.asarray(self.frame_temp))
+        #         backend.addArrayValues('xxx_instant_pressure', np.asarray(self.frame_press))
+        #         backend.addArrayValues('xxx_kinetic_energy', np.asarray(self.frame_kinetic))
+        #         backend.addArrayValues('xxx_potential_energy', np.asarray(self.frame_potential))
         #         backend.addArrayValues('frame_sequence_time', np.asarray(time_list))
         #         backend.closeSection('section_frame_sequence',gIndex)
             
@@ -1397,7 +1399,7 @@ def build_onetepMainFileSimpleMatcher():
     #        #     #forwardMatch = True,
     #        #     #sections = ["onetep_section_relativity_treatment"],
     #        #     subMatchers = [
-    #        #       SM(r"\sSEDC with\s*\: *(?P<van_der_Waals_method> [A-Za-z0-9() -]+)"),
+    #        #       SM(r"\sSEDC with\s*\: *(?P<van_der_waals_method> [A-Za-z0-9() -]+)"),
     #        #                   ]), # CLOSING van der waals
             
             
@@ -1412,7 +1414,7 @@ def build_onetepMainFileSimpleMatcher():
     #         SM(r"\sphonon calculation method\s*\:\s*(?P<x_onetep_phonon_method>[a-zA-Z]+\s[a-zA-Z]+)"),
     #         SM(r"\sphonon convergence tolerance\s*\:\s*(?P<x_onetep_phonon_tolerance>[-+0-9.eEd]+)"),
     #         SM(r"\smax\. number of phonon cycles\s*\:\s*(?P<x_onetep_phonon_cycles>[0-9.]+)"),
-    #         SM(r"\sDFPT solver method\s*\:\s*(?P<x_onetep_DFPT_solver_method>[a-zA-Z0-9.() ]+)"),
+    #         SM(r"\sDFPT solver method\s*\:\s*(?P<x_onetep_dfpt_solver_method>[a-zA-Z0-9.() ]+)"),
     #         SM(r"\sband convergence tolerance\s*\:\s*(?P<x_onetep_band_tolerance>[-+0-9.eEd]+)"),
     #                       ])
     edftCalculationSubMatcher = SM(name = 'phonon_calculation',
@@ -1565,7 +1567,7 @@ def build_onetepMainFileSimpleMatcher():
             ])
     
     VanderWaalsParameterSubMatcher = SM(name = 'dispersion' ,            
-        sections = ["x_onetep_section_van_der_Waals_parameters"],
+        sections = ["x_onetep_section_van_der_waals_parameters"],
         forwardMatch = True,
         subFlags = SM.SubFlags.Unordered,
         startReStr = r"dispersion",
@@ -1674,7 +1676,7 @@ def build_onetepMainFileSimpleMatcher():
                     SM(r"\s*\| Pseudopotential \(local\)\s*\:\s*(?P<x_onetep_pseudo_local_store>[-+0-9.eEdD]*)\s\|\s*"), 
                     SM(r"\s*\| Pseudopotential \(non\-local\)\s*\:\s*(?P<x_onetep_pseudo_non_local_store>[-+0-9.eEdD]*)\s\|\s*"), 
                     SM(r"\s*\| Hartree\s*\:\s*(?P<x_onetep_energy_correction_hartree_store>[-+0-9.eEdD]*)\s\|\s*"), 
-                    SM(r"\s*\| Exchange\-correlation\s*\:\s*(?P<x_onetep_energy_XC_store>[-+0-9.eEdD]*)\s\|\s*"), 
+                    SM(r"\s*\| Exchange\-correlation\s*\:\s*(?P<x_onetep_energy_xc_store>[-+0-9.eEdD]*)\s\|\s*"), 
                     SM(r"\s*\| Ewald\s*\:\s*(?P<x_onetep_ewald_correction_store>[-+0-9.eEdD]*)\s\|\s*"), 
                     SM(r"\s*\| Dispersion Correction\s*\:\s*(?P<x_onetep_dispersion_correction_store>[-+0-9.eEdD]*)\s\|\s*"), 
                     SM(r"\s*Integrated density\s*\:\s*(?P<x_onetep_integrated_density_store>[-+0-9.eEdD]*)\s*"), 
@@ -1696,7 +1698,7 @@ def build_onetepMainFileSimpleMatcher():
                         SM(r"\#\s*(?P<x_onetep_edft_iteration>[0-9]+)\s*(?P<x_onetep_edft_rms_gradient>[-\d\.]+)\s*(?P<x_onetep_edft_commutator>[\d\.]+)\s*(?P<x_onetep_edft_free_energy>[\d\.]+)"),  
                         SM(r"Step\s*\=\s*(?P<x_onetep_edft_step>[\d\.]+)\s*"), 
                         SM(r"Energy\s*\=\s*(?P<x_onetep_edft_energy>[\d\.]+)\s*"), 
-                        SM(r"Est\. 0K Energy 0\.5\*\(E\+A\)\s*\=\s*(?P<x_onetep_edft_0K>[\d\.]+)\s*"), 
+                        SM(r"Est\. 0K Energy 0\.5\*\(E\+A\)\s*\=\s*(?P<x_onetep_edft_0k>[\d\.]+)\s*"), 
                         SM(r"Residual Non\-orthogonality \=\s*(?P<x_onetep_residual_nonorthog>[\d\.]+)\s*"), 
                         SM(r"Residual N\_electrons\s*\=\s*(?P<x_onetep_residual_n_elec>[\d\.]+)\s*"), 
                         SM (name = 'EDFT submatcher',
@@ -1741,7 +1743,7 @@ def build_onetepMainFileSimpleMatcher():
                     SM(r"\s*\| Pseudopotential \(local\)\s*\:\s*(?P<x_onetep_pseudo_local_store>[-+0-9.eEdD]*)\s\|\s*"), 
                     SM(r"\s*\| Pseudopotential \(non\-local\)\s*\:\s*(?P<x_onetep_pseudo_non_local_store>[-+0-9.eEdD]*)\s\|\s*"), 
                     SM(r"\s*\| Hartree\s*\:\s*(?P<x_onetep_energy_correction_hartree_store>[-+0-9.eEdD]*)\s\|\s*"), 
-                    SM(r"\s*\| Exchange\-correlation\s*\:\s*(?P<x_onetep_energy_XC_store>[-+0-9.eEdD]*)\s\|\s*"), 
+                    SM(r"\s*\| Exchange\-correlation\s*\:\s*(?P<x_onetep_energy_xc_store>[-+0-9.eEdD]*)\s\|\s*"), 
                     SM(r"\s*\| Ewald\s*\:\s*(?P<x_onetep_ewald_correction_store>[-+0-9.eEdD]*)\s\|\s*"), 
                     SM(r"\s*\| Dispersion Correction\s*\:\s*(?P<x_onetep_dispersion_correction_store>[-+0-9.eEdD]*)\s\|\s*"), 
                     SM(r"\s*Integrated density\s*\:\s*(?P<x_onetep_integrated_density_store>[-+0-9.eEdD]*)\s*"), 
@@ -1774,7 +1776,7 @@ def build_onetepMainFileSimpleMatcher():
                     SM(r"\s*\| Pseudopotential \(local\)\s*\:\s*(?P<x_onetep_pseudo_local_store>[-+0-9.eEdD]*)\s\|\s*"), 
                     SM(r"\s*\| Pseudopotential \(non\-local\)\s*\:\s*(?P<x_onetep_pseudo_non_local_store>[-+0-9.eEdD]*)\s\|\s*"), 
                     SM(r"\s*\| Hartree\s*\:\s*(?P<x_onetep_energy_correction_hartree_store>[-+0-9.eEdD]*)\s\|\s*"), 
-                    SM(r"\s*\| Exchange\-correlation\s*\:\s*(?P<x_onetep_energy_XC_store>[-+0-9.eEdD]*)\s\|\s*"), 
+                    SM(r"\s*\| Exchange\-correlation\s*\:\s*(?P<x_onetep_energy_xc_store>[-+0-9.eEdD]*)\s\|\s*"), 
                     SM(r"\s*\| Ewald\s*\:\s*(?P<x_onetep_ewald_correction_store>[-+0-9.eEdD]*)\s\|\s*"), 
                     SM(r"\s*\| Dispersion Correction\s*\:\s*(?P<x_onetep_dispersion_correction_store>[-+0-9.eEdD]*)\s\|\s*"), 
                     SM(r"\s*Integrated density\s*\:\s*(?P<x_onetep_integrated_density_store>[-+0-9.eEdD]*)\s*"), 
@@ -2016,7 +2018,7 @@ def build_onetepMainFileSimpleMatcher():
     MDSubMatcher = SM(name = 'MD',
                 startReStr = r"\sStarting MD iteration\s*[0-9.]+\s\.\.\.\s*",             
                 #endReStr = r"BFGS\: finished iteration     0 with enthalpy\= \-2\.14201700E\+002 eV",
-                sections = ["x_onetep_section_SCF_iteration_frame"],
+                sections = ["x_onetep_section_scf_iteration_frame"],
                 # sections = ["section_single_configuration_calculation"],
                 endReStr = r"\s\.\.\.\sfinished MD iteration\s*[0-9.]+\s*",
                 repeats =True,
@@ -2024,11 +2026,11 @@ def build_onetepMainFileSimpleMatcher():
                     # SM(r"\s*[0-9]+\s*(?P<onetep_SCF_frame_energy>[-+0-9.eEdD]*)\s*[-+0-9.eEdD]*\s*[0-9.]*\s*\<\-\-\sSCF\s*",
                     #     endReStr = "\n",
                     #     repeats = True),
-                    SM(r"\s*[0-9]+\s*(?P<x_onetep_SCF_frame_energy>[-+0-9.eEdD]*)\s*[-+0-9.eEdD]*\s*(?P<x_onetep_SCF_frame_energy_gain>[-+0-9.eEdD]*)\s*(?P<x_onetep_frame_time_scf_iteration_wall_end>[0-9.]*)\s*\<\-\-\sSCF\s*",
+                    SM(r"\s*[0-9]+\s*(?P<x_onetep_scf_frame_energy>[-+0-9.eEdD]*)\s*[-+0-9.eEdD]*\s*(?P<x_onetep_scf_frame_energy_gain>[-+0-9.eEdD]*)\s*(?P<x_onetep_frame_time_scf_iteration_wall_end>[0-9.]*)\s*\<\-\-\sSCF\s*",
                         endReStr = "\n",
                         repeats = True),                
                     SM(r"Final free energy\s*\(E\-TS\)\s*= *(?P<x_onetep_frame_energy_free>[-+0-9.eEdD]*)"), # matching final converged total free energy
-                    SM(r"NB est\. 0K energy\s*\(E\-0\.5TS\)\s*= *(?P<x_onetep_frame_energy_total_T0>[-+0-9.eEdD]*)"), # 0K corrected final SCF energy
+                    SM(r"NB est\. 0K energy\s*\(E\-0\.5TS\)\s*= *(?P<x_onetep_frame_energy_total_t0>[-+0-9.eEdD]*)"), # 0K corrected final SCF energy
                     SM(startReStr = r"\s*x\s*MD\sData\:\s*x",
                          subMatchers = [
                             SM(r"\s*x\s*time\s*\:\s*(?P<x_onetep_frame_time>[+0-9.eEdD]+)\s*ps\s*x\s*"),
@@ -2269,11 +2271,11 @@ def get_cachingLevelForMetaName(metaInfoEnv):
                                 "x_onetep_disp_method_name_store":CachingLevel.Cache,
                                 'x_onetep_total_energy_corrected_for_finite_basis_store': CachingLevel.Cache,
                                 'x_onetep_frame_time':CachingLevel.Cache,
-                                'x_onetep_section_SCF_iteration_frame':CachingLevel.Cache,
+                                'x_onetep_section_scf_iteration_frame':CachingLevel.Cache,
                                 'x_onetep_raman_activity_store': CachingLevel.Cache,
-                                'x_onetep_SCF_frame_energy_gain':CachingLevel.Cache,
+                                'x_onetep_scf_frame_energy_gain':CachingLevel.Cache,
                                 'x_onetep_frame_energy_free':CachingLevel.Cache,
-                                'x_onetep_frame_energy_total_T0':CachingLevel.Cache,
+                                'x_onetep_frame_energy_total_t0':CachingLevel.Cache,
                                 'x_onetep_frame_time_scf_iteration_wall_end':CachingLevel.Cache,
                                 'x_onetep_total_orbital_store':CachingLevel.Cache,
                                 'x_onetep_mulliken_charge_store':CachingLevel.Cache,
@@ -2281,7 +2283,7 @@ def get_cachingLevelForMetaName(metaInfoEnv):
                                 'x_onetep_ngwf_radius_store':CachingLevel.Cache,
                                 'x_onetep_n_ngwf_atom_store':CachingLevel.Cache,
                                 'x_onetep_section_energy_components':CachingLevel.Cache,
-                                'x_onetep_SCF_frame_energy':CachingLevel.Cache,
+                                'x_onetep_scf_frame_energy':CachingLevel.Cache,
                                 'x_onetep_electronic_kinetic_energy':CachingLevel.Cache,
                                 'x_onetep_pseudo_local_store' :CachingLevel.Cache,
                                 'x_onetep_pseudo_non_local_store':CachingLevel.Cache,
@@ -2289,7 +2291,7 @@ def get_cachingLevelForMetaName(metaInfoEnv):
                                 'x_onetep_total_nbo_population_store':CachingLevel.Cache,
                                 'x_onetep_nbo_partial_charge_store':CachingLevel.Cache,
                                 'x_onetep_energy_correction_hartree_store':CachingLevel.Cache,
-                                'x_onetep_energy_XC_store':CachingLevel.Cache,
+                                'x_onetep_energy_xc_store':CachingLevel.Cache,
                                 'x_onetep_ewald_correction_store':CachingLevel.Cache,
                                 'x_onetep_electronic_dipole_moment_store':CachingLevel.Cache,
                                 'x_onetep_ionic_dipole_moment_store':CachingLevel.Cache,
