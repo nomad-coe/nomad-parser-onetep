@@ -1,13 +1,26 @@
+# Copyright 2016-2018 Martina Stella, Fawzi Mohamed
+#
+#   Licensed under the Apache License, Version 2.0 (the "License");
+#   you may not use this file except in compliance with the License.
+#   You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+#   Unless required by applicable law or agreed to in writing, software
+#   distributed under the License is distributed on an "AS IS" BASIS,
+#   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#   See the License for the specific language governing permissions and
+#   limitations under the License.
+
 from builtins import range
 from builtins import object
-import setup_paths
 import numpy as np
 import nomadcore.ActivateLogging
 from nomadcore.caching_backend import CachingLevel
 from nomadcore.simple_parser import mainFunction
 from nomadcore.simple_parser import SimpleMatcher as SM
 from nomadcore.local_meta_info import loadJsonFile, InfoKindEl
-from OnetepCommon import get_metaInfo
+from .OnetepCommon import get_metaInfo
 import logging, os, re, sys
 
 
@@ -37,7 +50,7 @@ class OnetepCellParserContext(object):
         self.at_nr = []
         self.onetep_atom_positions_store=[]
         self.atom_labels_store=[]
-    
+
     def startedParsing(self, fInName, parser):
         """Function is called when the parsing starts and the compiled parser is obtained.
 
@@ -46,7 +59,7 @@ class OnetepCellParserContext(object):
             parser: The compiled parser. Is an object of the class SimpleParser in nomadcore.simple_parser.py.
         """
         self.parser = parser
-        
+
         # get unit from metadata for band energies
         # allows to reset values if the same superContext is used to parse different files
         # self.band_energies = None
@@ -75,7 +88,7 @@ class OnetepCellParserContext(object):
                 vet[2]= [i * bohr_to_m for i in vet[2]]
                 self.cell_store.append(vet[0])
                 self.cell_store.append(vet[1])
-                self.cell_store.append(vet[2]) # Reconstructing the unit cell vector by vector    
+                self.cell_store.append(vet[2]) # Reconstructing the unit cell vector by vector
             elif units[0] == 'ang':
                 vet[0] = vet[0].split()
                 vet[0] = [float(i) for i in vet[0]]
@@ -102,18 +115,18 @@ class OnetepCellParserContext(object):
             self.cell_store.append(vet[0])
             self.cell_store.append(vet[1])
             self.cell_store.append(vet[2]) # Reco
-    
-    def onClose_section_system(self, backend, gIndex, section):    
+
+    def onClose_section_system(self, backend, gIndex, section):
         unitsap = section['x_onetep_units_atom_position']
         pos = section['x_onetep_store_atom_positions']
-       
+
         bohr_to_m = float(5.29177211e-11)
         ang_to_m = float(1e-10)
         if unitsap is not None:
             if unitsap[0] == 'bohr':
-              
+
                 pos = section['x_onetep_store_atom_positions']
-                       
+
                 if pos:
                     self.at_nr = len(pos)
                     for i in range(0, self.at_nr):
@@ -121,27 +134,27 @@ class OnetepCellParserContext(object):
                         pos[i] = [float(j) for j in pos[i]]
                         pos[i]= [ii * bohr_to_m for ii in pos[i]]
                         self.onetep_atom_positions_store.append(pos[i])
-                    
+
             elif unitsap[0] == 'ang':
                 pos = section['x_onetep_store_atom_positions']
-                   
+
                 if pos:
                     self.at_nr = len(pos)
                     for i in range(0, self.at_nr):
                         pos[i] = pos[i].split()
                         pos[i] = [float(j) for j in pos[i]]
                         pos[i]= [ii * ang_to_m for ii in pos[i]]
-                        
+
                         self.onetep_atom_positions_store.append(pos[i])
             else:
-                pass                
+                pass
 
-         
-        
-        
-        
+
+
+
+
         if pos:
-            bohr_to_m = float(5.29177211e-11) 
+            bohr_to_m = float(5.29177211e-11)
             self.at_nr = len(pos)
             for i in range(0, self.at_nr):
                 pos[i] = pos[i].split()
@@ -149,13 +162,13 @@ class OnetepCellParserContext(object):
                 pos[i]= [ii * bohr_to_m for ii in pos[i]]
                 self.onetep_atom_positions_store.append(pos[i])
         #get cached values of onetep_store_atom_labels
-            
+
         lab = section['x_onetep_store_atom_labels']
-                
+
         for i in range(0, len(lab)):
             lab[i] = re.sub('\s+', ' ', lab[i]).strip()
         self.atom_labels_store.extend(lab)
-            
+
 
 
 def build_OnetepCellFileSimpleMatcher():
@@ -167,7 +180,7 @@ def build_OnetepCellFileSimpleMatcher():
     Returns:
        SimpleMatcher that parses *.cell file of Onetep.
     """
- 
+
     return SM(name = "systemDescription",
                 startReStr = "",
                 forwardMatch = True,
@@ -223,7 +236,7 @@ def build_OnetepCellFileSimpleMatcher():
                                 repeats = True),
 
                             ]), # CLOSING onet
-                    
+
                     SM(name = 'cellInformation',
                         startReStr = r"\%BLOCK\sLATTICE\_CART\s*",
                         # forwardMatch = True,
@@ -283,8 +296,8 @@ def build_OnetepCellFileSimpleMatcher():
                         SM(r"(?P<x_onetep_store_atom_labels>[A-Za-z0-9]+)\s*(?P<x_onetep_store_atom_positions>[-\d\.]+\s+[-\d\.]+\s+[-\d\.]+)",
                             # endReStr = "\n",
                             repeats = True)
-                    
-                                 ]), # CLOSING onet               
+
+                                 ]), # CLOSING onet
                     SM(startReStr = r"\s*\%block\spositions\_abs\s*",
                         forwardMatch = True,
                         sections = ["x_onetep_section_atom_positions"],
@@ -294,7 +307,7 @@ def build_OnetepCellFileSimpleMatcher():
                         SM(r"\s*(?P<x_onetep_store_atom_labels>[A-Za-z0-9]+)\s*(?P<x_onetep_store_atom_positions>[-\d\.]+\s+[-\d\.]+\s+[-\d\.]+)",
                             # endReStr = "\n",
                             repeats = True)
-                    
+
                                  ]), # CLOS
                     SM(startReStr = r"\%block\s*positions\_abs\s*",
                         forwardMatch = True,
@@ -305,7 +318,7 @@ def build_OnetepCellFileSimpleMatcher():
                         SM(r"(?P<x_onetep_store_atom_labels>[A-Za-z0-9]+)\s*(?P<x_onetep_store_atom_positions>[-\d\.]+\s+[-\d\.]+\s+[-\d\.]+)",
                             # endReStr = "\n",
                             repeats = True)
-                    
+
                                  ]), # CLOSING onetep_section_atom_position
                     SM(startReStr = r"\s*\%block\s*positions\_abs\s*",
                         forwardMatch = True,
@@ -316,9 +329,9 @@ def build_OnetepCellFileSimpleMatcher():
                         SM(r"\s*(?P<x_onetep_store_atom_labels>[A-Za-z0-9]+)\s*(?P<x_onetep_store_atom_positions>[-\d\.]+\s+[-\d\.]+\s+[-\d\.]+)",
                             # endReStr = "\n",
                             repeats = True)
-                    
+
                                  ]), # CLOSI
-                    
+
 
 
                     SM(startReStr = r"\%BLOCK\sPOSITIONS\_ABS",
@@ -330,8 +343,8 @@ def build_OnetepCellFileSimpleMatcher():
                         SM(r"(?P<x_onetep_store_atom_labels>[A-Za-z0-9]+)\s*(?P<x_onetep_store_atom_positions>[-\d\.]+\s+[-\d\.]+\s+[-\d\.]+)",
                             # endReStr = "\n",
                             repeats = True)
-                    
-                                 ]), # CLOSING onet               
+
+                                 ]), # CLOSING onet
                     SM(startReStr = r"\s*\%BLOCK\sPOSITIONS\_ABS",
                         forwardMatch = True,
                         sections = ["x_onetep_section_atom_positions"],
@@ -341,7 +354,7 @@ def build_OnetepCellFileSimpleMatcher():
                         SM(r"\s*(?P<x_onetep_store_atom_labels>[A-Za-z0-9]+)\s*(?P<x_onetep_store_atom_positions>[-\d\.]+\s+[-\d\.]+\s+[-\d\.]+)",
                             # endReStr = "\n",
                             repeats = True)
-                    
+
                                  ]), # CLOS
                     SM(startReStr = r"\%BLOCK\s*POSITIONS\_ABS",
                         forwardMatch = True,
@@ -352,7 +365,7 @@ def build_OnetepCellFileSimpleMatcher():
                         SM(r"(?P<x_onetep_store_atom_labels>[A-Za-z0-9]+)\s*(?P<x_onetep_store_atom_positions>[-\d\.]+\s+[-\d\.]+\s+[-\d\.]+)",
                             # endReStr = "\n",
                             repeats = True)
-                    
+
                                  ]), # CLOSING onetep_section_atom_position
                     SM(startReStr = r"\s*\%BLOCK\s*POSITIONS\_ABS",
                         forwardMatch = True,
@@ -363,12 +376,12 @@ def build_OnetepCellFileSimpleMatcher():
                         SM(r"\s*(?P<x_onetep_store_atom_labels>[A-Za-z0-9]+)\s*(?P<x_onetep_store_atom_positions>[-\d\.]+\s+[-\d\.]+\s+[-\d\.]+)",
                             # ,
                             repeats = True)
-                    
+
                                  ]), # CLOSI
                    ]) # CLOSING SM systemDescription
-               
-          
-        
+
+
+
 
 
 def get_cachingLevelForMetaName(metaInfoEnv, CachingLvl):

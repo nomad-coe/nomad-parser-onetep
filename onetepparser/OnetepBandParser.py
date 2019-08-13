@@ -1,14 +1,27 @@
+# Copyright 2016-2018 Martina Stella, Fawzi Mohamed
+#
+#   Licensed under the Apache License, Version 2.0 (the "License");
+#   you may not use this file except in compliance with the License.
+#   You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+#   Unless required by applicable law or agreed to in writing, software
+#   distributed under the License is distributed on an "AS IS" BASIS,
+#   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#   See the License for the specific language governing permissions and
+#   limitations under the License.
+
 from __future__ import division
 from builtins import range
 from builtins import object
-import setup_paths
 import numpy as np
 import nomadcore.ActivateLogging
 from nomadcore.caching_backend import CachingLevel
 from nomadcore.simple_parser import mainFunction
 from nomadcore.simple_parser import SimpleMatcher as SM
 from nomadcore.local_meta_info import loadJsonFile, InfoKindEl
-from OnetepCommon import get_metaInfo
+from .OnetepCommon import get_metaInfo
 import logging, os, re, sys
 
 
@@ -67,7 +80,7 @@ class OnetepBandParserContext(object):
     def onClose_x_Onetep_section_spin_number(self, backend, gIndex, section):
 
         self.n_spin = section['x_Onetep_spin_number']
-        
+
 
 # Storing the k point coordinates
     def onClose_x_Onetep_section_scf_k_points(self, backend, gIndex, section):
@@ -102,18 +115,18 @@ class OnetepBandParserContext(object):
         e_st_1, e_st_2 = split_list(e_st)
         e_st_1 = [x * Ha_to_J for x in e_st_1]
         e_st_2 = [x * Ha_to_J for x in e_st_2]
-        
+
         if self.n_spin[0] == 1:
             self.e_nr = len(e_st_0)
-            self.e_spin_1.append(e_st_0)            
+            self.e_spin_1.append(e_st_0)
             self.e_spin_2 = []
 
         else:
             self.e_nr = len(e_st_1)
-            self.e_spin_1.append(e_st_1)          
-            self.e_spin_2.append(e_st_2) 
-            
-       
+            self.e_spin_1.append(e_st_1)
+            self.e_spin_2.append(e_st_2)
+
+
 
 
 
