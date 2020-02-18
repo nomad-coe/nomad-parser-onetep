@@ -372,8 +372,8 @@ class OnetepParserContext(object):
         eVtoRy = 0.073498618
         ecut_str_name = int(round(eVtoRy*self.ecut))
 
-        self.basis_set_kind = 'psinc_functions'
-        self.basis_set_name = 'psinc_functions'
+        self.basis_set_kind = 'psinc functions'
+        self.basis_set_name = 'psinc functions'
         backend.addValue('basis_set_planewave_cutoff', self.ecut)
         backend.addValue('basis_set_cell_dependent_kind', self.basis_set_kind)
         backend.addValue('basis_set_cell_dependent_name', self.basis_set_name)
@@ -1210,7 +1210,7 @@ class OnetepParserContext(object):
         if self.ts_total_energy is None:
             backend.addValue('program_basis_set_type', self.basis_set_kind)
         else:
-            basis_set_kind_ts = 'psinc_functions'
+            basis_set_kind_ts = 'psinc functions'
             backend.addValue('program_basis_set_type', basis_set_kind_ts)
         # MDSuperContext = OnetepMDParser.OnetepMDParserContext(False)
         # MDParser = AncillaryParser(
