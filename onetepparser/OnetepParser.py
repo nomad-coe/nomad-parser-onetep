@@ -314,9 +314,9 @@ class OnetepParserContext(object):
                     self.dispersion.append(match)
             self.dispersion = "_".join(sorted(self.dispersion))
             self.disp = str(self.dispersion)
-            backend.openSection('section_method')
+            method_index = backend.openSection('section_method')
             backend.addValue('van_der_Waals_method',self.disp)
-            backend.closeSection('section_method',gIndex+1)
+            backend.closeSection('section_method',method_index)
 
 
     def onClose_section_method(self, backend, gIndex, section):
@@ -328,10 +328,10 @@ class OnetepParserContext(object):
             self.func_and_weight = []
             for i in range(len(self.functional_types)):
                 self.func_total.append(self.functionals[i]+'_'+self.functional_weight[i])
-                backend.openSection('section_XC_functionals')
+                xc_functionals_index = backend.openSection('section_XC_functionals')
                 backend.addValue('XC_functional_name', self.functionals[i])
                 backend.addValue('XC_functional_weight', self.functional_weight[i])
-                backend.closeSection('section_XC_functionals',gIndex+i)
+                backend.closeSection('section_XC_functionals', xc_functionals_index)
         # Push the functional string into the backend
         # Push the relativistic treatment string into the backend
             backend.addValue('XC_functional', "_".join(sorted(self.functionals)))
@@ -346,10 +346,10 @@ class OnetepParserContext(object):
         else:
             for i in range(len(self.functionals)):
           #      self.func_total.append(self.functionals[i]+'_'+self.functional_weight[i])
-                backend.openSection('section_XC_functionals')
+                xc_functionals_index = backend.openSection('section_XC_functionals')
                 backend.addValue('XC_functional_name', self.functionals[i])
          #       backend.addValue('XC_functional_weight', self.functional_weight[i])
-                backend.closeSection('section_XC_functionals',gIndex+i)
+                backend.closeSection('section_XC_functionals', xc_functionals_index)
             backend.addValue('XC_functional', "_".join(sorted(self.functionals)))
             # backend.addValue('relativity_method', self.relativistic)
             if self.disp1 is not None:
