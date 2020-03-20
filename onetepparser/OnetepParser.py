@@ -25,7 +25,6 @@ from nomadcore.simple_parser import SimpleMatcher as SM
 from .OnetepCommon import get_metaInfo
 from . import OnetepCellParser, OnetepBandParser, OnetepMDParser, OnetepTSParser
 import logging, os, re, sys
-import nomad_meta_info
 
 
 ################################################################################################################################################################
@@ -2308,13 +2307,6 @@ def get_cachingLevelForMetaName(metaInfoEnv):
 
 # get main file description
 onetepMainFileSimpleMatcher = build_onetepMainFileSimpleMatcher()
-# loading metadata from nomad-meta-info/meta_info/nomad_meta_info/onetep.nomadmetainfo.json
-metaInfoPath = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(nomad_meta_info.__file__)), "onetep.nomadmetainfo.json"))
-metaInfoEnv = get_metaInfo(metaInfoPath)
-# set parser info
-parserInfo = {'name':'onetep-parser', 'version': '1.0'}
-# get caching level for metadata
-cachingLevelForMetaName = get_cachingLevelForMetaName(metaInfoEnv)
 
 
 class OnetepParser():
@@ -2326,24 +2318,15 @@ class OnetepParser():
         from unittest.mock import patch
         logging.debug('dmol3 parser started')
         logging.getLogger('nomadcore').setLevel(logging.WARNING)
-        backend = self.backend_factory(metaInfoEnv)
+        backend = self.backend_factory("onetep.nomadmetainfo.json")
         with patch.object(sys, 'argv', ['<exe>', '--uri', 'nmd://uri', mainfile]):
             mainFunction(
                 mainFileDescription=onetepMainFileSimpleMatcher,
-                metaInfoEnv=metaInfoEnv,
-                parserInfo=parserInfo,
-                cachingLevelForMetaName=cachingLevelForMetaName,
+                metaInfoEnv=None,
+                parserInfo={'name':'onetep-parser', 'version': '1.0'},
+                cachingLevelForMetaName=get_cachingLevelForMetaName(backend.metaInfoEnv()),
                 superContext=OnetepParserContext(),
                 defaultSectionCachingLevel = True,
                 superBackend=backend)
 
         return backend
-
-
-if __name__ == "__main__":
-    mainFunction(mainFileDescription = onetepMainFileSimpleMatcher,
-                 metaInfoEnv = metaInfoEnv,
-                 parserInfo = parserInfo,
-                 cachingLevelForMetaName = cachingLevelForMetaName,
-                 superContext = OnetepParserContext(),
-                 defaultSectionCachingLevel = True)
