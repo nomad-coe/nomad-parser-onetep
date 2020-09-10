@@ -1,0 +1,7 @@
+code-label: ONETEP
+code-label-style: All in capitals
+code-url: https://www.onetep.org/
+parser-dir-name: dependencies/parsers/onetep/
+parser-git-url: https://gitlab.mpcdf.mpg.de/nomad-lab/parser-onetep
+parser-specific: ''
+table-of-files: ''
