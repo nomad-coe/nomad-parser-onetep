@@ -26,6 +26,9 @@ from nomad.datamodel.metainfo import run
 from nomad.datamodel.metainfo import workflow
 
 
+m_package = Package()
+
+
 class x_onetep_section_vibrational_frequencies(MSection):
     '''
     -
