@@ -20,7 +20,7 @@ import numpy as np            # pylint: disable=unused-import
 import typing                 # pylint: disable=unused-import
 from nomad.metainfo import (  # pylint: disable=unused-import
     MSection, MCategory, Category, Package, Quantity, Section, SubSection, SectionProxy,
-    Reference
+    Reference, JSON
 )
 from nomad.datamodel.metainfo import simulation
 from nomad.datamodel.metainfo import workflow
@@ -193,23 +193,25 @@ class x_onetep_section_tddft_excitations(MSection):
 
     m_def = Section(validate=False)
 
-    x_onetep_tddft_excit_energy_store = Quantity(
+    x_onetep_tddft_excit_energy = Quantity(
         type=np.dtype(np.float64),
         shape=[],
+        unit='joule',
         description='''
         exciations
         ''')
 
-    x_onetep_tddft_excit_oscill_str_store = Quantity(
+    x_onetep_tddft_excit_oscill_str = Quantity(
         type=np.dtype(np.float64),
         shape=[],
         description='''
         oscillator strenght
         ''')
 
-    x_onetep_tddft_excit_lifetime_store = Quantity(
+    x_onetep_tddft_excit_lifetime = Quantity(
         type=np.dtype(np.float64),
         shape=[],
+        unit='s',
         description='''
         excit_lifetime
         ''')
@@ -222,21 +224,21 @@ class x_onetep_section_tddft_iterations(MSection):
 
     m_def = Section(validate=False)
 
-    x_onetep_tddft_energy_store = Quantity(
+    x_onetep_tddft_energy = Quantity(
         type=np.dtype(np.float64),
         shape=[],
         description='''
         lrtddft energy
         ''')
 
-    x_onetep_tddft_penalties_store = Quantity(
+    x_onetep_tddft_penalties = Quantity(
         type=np.dtype(np.float64),
         shape=[],
         description='''
         lrtddft energy
         ''')
 
-    x_onetep_tddft_step_store = Quantity(
+    x_onetep_tddft_step = Quantity(
         type=np.dtype(np.float64),
         shape=[],
         description='''
@@ -2662,7 +2664,7 @@ class Calculation(simulation.calculation.Calculation):
         Pseudopotential
         ''')
 
-    x_onetep_final_rms_gradient = Quantity(
+    x_onetep_rms_gradient = Quantity(
         type=np.dtype(np.float64),
         shape=[],
         description='''
@@ -2858,6 +2860,17 @@ class Calculation(simulation.calculation.Calculation):
         sub_section=SectionProxy('x_onetep_section_stress_tensor'),
         repeats=True)
 
+    x_onetep_section_tddft = SubSection(sub_section=x_onetep_section_tddft.m_def, repeats=True)
+
+
+class Energy(simulation.calculation.Energy):
+
+    m_def = Section(validate=False, extends_base_section=True)
+
+    x_onetep_pseudopotential_local = SubSection(simulation.calculation.EnergyEntry.m_def)
+
+    x_onetep_pseudopotential_non_local = SubSection(simulation.calculation.EnergyEntry.m_def)
+
 
 class Method(simulation.method.Method):
 
@@ -2881,6 +2894,13 @@ class Method(simulation.method.Method):
     x_onetep_section_relativity_treatment = SubSection(
         sub_section=SectionProxy('x_onetep_section_relativity_treatment'),
         repeats=True)
+
+    x_onetep_input_parameters = Quantity(
+        type=JSON,
+        shape=[],
+        description='''
+        '''
+    )
 
 
 class GeometryOptimization(workflow.GeometryOptimization):
